@@ -1,10 +1,11 @@
-import { useState } from 'react'
-
+import { Route, Routes } from "react-router-dom";
+import Settings from "./Pages/Employee/Settings";
 function App() {
-
   return (
-    <h1>App</h1>
-  )
+    <Routes>
+      <Route path="/" element={<Settings />} />
+    </Routes>
+  );
 }
 
-export default App
+export default App;
