@@ -1,10 +1,10 @@
 function SalaryDetails({
-  basicSalary,
-  hra,
-  grossSalary,
-  pfDeduction,
-  netSalary,
-  onViewPayslips,
+  basicSalary = 4000,
+  hra = 7000,
+  grossSalary = 11000,
+  pfDeduction = 1000,
+  netSalary = 10000,
+  onViewPayslips = 10000,
 }) {
   return (
     <div className="min-h-screen flex items-center justify-center">
