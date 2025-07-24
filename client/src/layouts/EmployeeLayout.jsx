@@ -1,15 +1,15 @@
-import React from 'react'
-import { Outlet } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
+import React from "react";
+import { Outlet } from "react-router-dom";
+import Sidebar from "../components/Sidebar";
 
 const employeeLinks = [
-    // { label: "Dashboard", path: "/employee/dashboard" },
-    { label: "Leave", path: "/employee/leave" },
-    { label: "Attendance", path: "/employee/attendance" },
-    // { label: "My Profile", path: "/employee/profile" },
-    { label: "My Salary", path: "/employee/salaryDetails" },
-    { label: "Settings", path: "/employee/settings" },
-  ];
+  { label: "Dashboard", path: "/employee/dashboard" },
+  { label: "Leave", path: "/employee/leave" },
+  { label: "Attendance", path: "/employee/attendance" },
+  // { label: "My Profile", path: "/employee/profile" },
+  { label: "My Salary", path: "/employee/salaryDetails" },
+  { label: "Settings", path: "/employee/settings" },
+];
 function EmployeeLayout() {
   return (
     <div className="flex">
@@ -18,7 +18,7 @@ function EmployeeLayout() {
         <Outlet />
       </main>
     </div>
-  )
+  );
 }
 
-export default EmployeeLayout
+export default EmployeeLayout;
