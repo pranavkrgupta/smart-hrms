@@ -8,6 +8,8 @@ import ManageEmployees from './pages/admin/ManageEmployee';
 import LeaveManagement from './pages/admin/LeaveManagement';
 import AttendanceManagement from './pages/admin/AttendanceManagement';
 import ManageDepartments from './pages/admin/ManageDepartment';
+import ManageDesignation from './pages/admin/ManageDesignation';
+
 
 function App() {
   return (
@@ -21,6 +23,7 @@ function App() {
       <Route path="/Employee/Attendance" element={<Attendance />} />
       <Route path="/admin/manage-employees" element={<ManageEmployees />} />
       <Route path="/admin/manage-departments" element={<ManageDepartments />} />
+      <Route path="/admin/manage-designations" element={<ManageDesignation />} />
     </Routes>
   );
 }
