@@ -1,5 +1,4 @@
 function Dashboard({
-  userName = "John",
   salary = 5000,
   attendance = "26/30 Present",
   leaves = 5,
@@ -10,12 +9,7 @@ function Dashboard({
   ],
 }) {
   return (
-    <div className="min-h-screen bg-white text-black p-6">
-      {/* Welcome Section */}
-      <div className="border p-4 mb-6 text-center text-xl font-bold bg-blue-100 text-black">
-        Welcome {userName}
-      </div>
-
+    <div className="min-h-screen bg-white text-black p-6 mt-10">
       {/* Quick Info Section */}
       <div className="border p-4 mb-6">
         <h2 className="text-lg font-semibold mb-4">Quick Info</h2>
