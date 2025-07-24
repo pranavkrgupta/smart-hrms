@@ -1,6 +1,6 @@
-import { Routes, Route } from 'react-router-dom';
-import Login from './pages/Login';
-import Leave from './pages/Employee/Leave';
+import { Routes, Route } from "react-router-dom";
+import Login from "./pages/Login";
+import Leave from "./pages/Employee/Leave";
 import Settings from "./pages/Employee/Settings";
 import Attendance from "./pages/Employee/Attendance"
 import SalaryDetails from "./pages/Employee/SalaryDetails"
@@ -16,7 +16,7 @@ import Profile from './pages/Employee/Profile';
 function App() {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<Login />} />
       {/* Admin Route */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route path="manage-leave" element={<LeaveManagement />} />
@@ -26,15 +26,13 @@ function App() {
       </Route>
 
       {/* Employee Route */}
-      <Route path="/employee" element={<EmployeeLayout />} >
+      <Route path="/employee" element={<EmployeeLayout />}>
         <Route path="leave" element={<Leave />} />
         <Route path="settings" element={<Settings />} />
         <Route path="salaryDetails" element={<SalaryDetails />} />
         <Route path="attendance" element={<Attendance />} />
-
         <Route path="profile" element={<Profile />} />
-
-
+        <Route path="dashboard" element={<Dashboard />} />
       </Route>
     </Routes>
   );
