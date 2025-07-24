@@ -6,7 +6,7 @@ const employeeLinks = [
   { label: "Dashboard", path: "/employee/dashboard" },
   { label: "Leave", path: "/employee/leave" },
   { label: "Attendance", path: "/employee/attendance" },
-  // { label: "My Profile", path: "/employee/profile" },
+  { label: "My Profile", path: "/employee/profile" },
   { label: "My Salary", path: "/employee/salaryDetails" },
   { label: "Settings", path: "/employee/settings" },
 ];

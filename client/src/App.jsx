@@ -2,15 +2,16 @@ import { Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Leave from "./pages/Employee/Leave";
 import Settings from "./pages/Employee/Settings";
-import Attendance from "./pages/Employee/Attendance";
-import SalaryDetails from "./pages/Employee/SalaryDetails";
-import ManageEmployees from "./pages/admin/ManageEmployee";
-import LeaveManagement from "./pages/admin/LeaveManagement";
-import AttendanceManagement from "./pages/admin/AttendanceManagement";
-import ManageDepartments from "./pages/admin/ManageDepartment";
-import AdminLayout from "./layouts/AdminLayout";
-import EmployeeLayout from "./layouts/EmployeeLayout";
-import Dashboard from "./pages/Employee/Dashboard";
+import Attendance from "./pages/Employee/Attendance"
+import SalaryDetails from "./pages/Employee/SalaryDetails"
+import ManageEmployees from './pages/admin/ManageEmployee';
+import LeaveManagement from './pages/admin/LeaveManagement';
+import AttendanceManagement from './pages/admin/AttendanceManagement';
+import ManageDepartments from './pages/admin/ManageDepartment';
+import AdminLayout from './layouts/AdminLayout';
+import EmployeeLayout from './layouts/EmployeeLayout';
+import Profile from './pages/Employee/Profile';
+
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
         <Route path="settings" element={<Settings />} />
         <Route path="salaryDetails" element={<SalaryDetails />} />
         <Route path="attendance" element={<Attendance />} />
+        <Route path="profile" element={<Profile />} />
         <Route path="dashboard" element={<Dashboard />} />
       </Route>
     </Routes>
