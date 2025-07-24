@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import Leave from "./pages/Employee/Leave";
 import Settings from "./Pages/Employee/Settings";
 import SalaryDetails from "./pages/Employee/SalaryDetails";
+import EmployeeProfile from "./pages/Employee/EmployeeProfile";
 
 function App() {
   // Salary Data
@@ -23,6 +24,7 @@ function App() {
         path="/Employee/SalaryDetails"
         element={<SalaryDetails {...salaryData} />}
       />
+      <Route path="/Employee/Profile" element={<EmployeeProfile />} />
     </Routes>
   );
 }
