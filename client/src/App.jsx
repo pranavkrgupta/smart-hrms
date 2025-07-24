@@ -10,6 +10,7 @@ import AttendanceManagement from './pages/admin/AttendanceManagement';
 import ManageDepartments from './pages/admin/ManageDepartment';
 import AdminLayout from './layouts/AdminLayout';
 import EmployeeLayout from './layouts/EmployeeLayout';
+import Profile from './pages/Employee/Profile';
 
 
 function App() {
@@ -30,6 +31,10 @@ function App() {
         <Route path="settings" element={<Settings />} />
         <Route path="salaryDetails" element={<SalaryDetails />} />
         <Route path="attendance" element={<Attendance />} />
+
+        <Route path="profile" element={<Profile />} />
+
+
       </Route>
     </Routes>
   );
