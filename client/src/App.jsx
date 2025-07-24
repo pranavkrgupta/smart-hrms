@@ -15,7 +15,7 @@ import Dashboard from "./pages/Employee/Dashboard";
 function App() {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<Login />} />
       {/* Admin Route */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route path="manage-leave" element={<LeaveManagement />} />
