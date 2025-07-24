@@ -15,7 +15,7 @@ import EmployeeLayout from './layouts/EmployeeLayout';
 function App() {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<Login />} />
       {/* Admin Route */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route path="manage-leave" element={<LeaveManagement />} />
