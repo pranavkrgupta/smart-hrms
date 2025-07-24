@@ -8,9 +8,11 @@ import ManageEmployees from './pages/admin/ManageEmployee';
 import LeaveManagement from './pages/admin/LeaveManagement';
 import AttendanceManagement from './pages/admin/AttendanceManagement';
 import ManageDepartments from './pages/admin/ManageDepartment';
+import ManageDesignation from './pages/admin/ManageDesignation';
 import AdminLayout from './layouts/AdminLayout';
 import EmployeeLayout from './layouts/EmployeeLayout';
 import Profile from './pages/Employee/Profile';
+
 
 
 function App() {
@@ -23,6 +25,7 @@ function App() {
         <Route path="manage-attendance" element={<AttendanceManagement />} />
         <Route path="manage-employees" element={<ManageEmployees />} />
         <Route path="manage-departments" element={<ManageDepartments />} />
+          <Route path="manage-designations" element={<ManageDesignation />} />
       </Route>
 
       {/* Employee Route */}
@@ -34,6 +37,7 @@ function App() {
         <Route path="profile" element={<Profile />} />
         <Route path="dashboard" element={<Dashboard />} />
       </Route>
+
     </Routes>
   );
 }
