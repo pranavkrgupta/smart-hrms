@@ -12,6 +12,7 @@ import ManageDesignation from './pages/admin/ManageDesignation';
 import AdminLayout from './layouts/AdminLayout';
 import EmployeeLayout from './layouts/EmployeeLayout';
 import Profile from './pages/Employee/Profile';
+import Dashboard from './pages/Employee/Dashboard';
 
 
 
