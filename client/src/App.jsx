@@ -8,19 +8,29 @@ import ManageEmployees from './pages/admin/ManageEmployee';
 import LeaveManagement from './pages/admin/LeaveManagement';
 import AttendanceManagement from './pages/admin/AttendanceManagement';
 import ManageDepartments from './pages/admin/ManageDepartment';
+import AdminLayout from './layouts/AdminLayout';
+import EmployeeLayout from './layouts/EmployeeLayout';
+
 
 function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/admin/manage-leave" element={<LeaveManagement />} />
-      <Route path="/admin/manage-attendance" element={<AttendanceManagement />} />
-      <Route path="/Employee/Leave" element={<Leave />} />
-      <Route path="/Employee/Settings" element={<Settings />} />
-      <Route path="/Employee/SalaryDetails" element={<SalaryDetails />} />
-      <Route path="/Employee/Attendance" element={<Attendance />} />
-      <Route path="/admin/manage-employees" element={<ManageEmployees />} />
-      <Route path="/admin/manage-departments" element={<ManageDepartments />} />
+      {/* Admin Route */}
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route path="manage-leave" element={<LeaveManagement />} />
+        <Route path="manage-attendance" element={<AttendanceManagement />} />
+        <Route path="manage-employees" element={<ManageEmployees />} />
+        <Route path="manage-departments" element={<ManageDepartments />} />
+      </Route>
+
+      {/* Employee Route */}
+      <Route path="/employee" element={<EmployeeLayout />} >
+        <Route path="leave" element={<Leave />} />
+        <Route path="settings" element={<Settings />} />
+        <Route path="salaryDetails" element={<SalaryDetails />} />
+        <Route path="attendance" element={<Attendance />} />
+      </Route>
     </Routes>
   );
 }
