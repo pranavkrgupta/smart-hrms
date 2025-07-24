@@ -7,7 +7,7 @@ function ManageEmployees() {
         [{
             id: 1,
             name: "Nishant Dwivedi",
-            email: "thenishant30@gmail.com",
+            email: "nishant@gmail.com",
             department: "IT",
             designation: "SDE",
         },
@@ -20,8 +20,15 @@ function ManageEmployees() {
         },
         {
             id: 3,
-            name: "Madhura",
-            email: "madhura@gmail.com",
+            name: "Varun",
+            email: "varun@gmail.com",
+            department: "IT",
+            designation: "SDE-2",
+        },
+        {
+            id: 4,
+            name: "Pranav",
+            email: "pranav@gmail.com",
             department: "IT",
             designation: "CTO",
         },
@@ -30,6 +37,7 @@ function ManageEmployees() {
     const [isAddModalVisible, setIsAddModalVisible] = useState(false);
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [searchKeyword, setSearchKeyword] = useState("");
+    const [editEmployeeId, setEditEmployeeId] = useState(null);
     const matchedEmployees = searchKeyword == "" ? employees : employees.filter((e) => e.name.toLowerCase().includes(searchKeyword.toLowerCase()));
 
     function handleSearch(e) {
@@ -41,22 +49,40 @@ function ManageEmployees() {
     }
 
     function handleDeletion(e) {
-        // todo
+       const empId = e.target.getAttribute("data-id");
+       setEmployees(e => [...employees.filter(emp => emp.id != empId)])
     }
 
     function handleEditClick(e) {
-        // todo
         setIsEditModalVisible(true)
+        setEditEmployeeId(e.target.getAttribute("data-id"));
     }
 
     function handleEmployeeAddition(e) {
-        // todo {axios call to add an employee}
         e.preventDefault();
+        const temp = {
+            id: e.target.id.value,
+            name: e.target.name.value,
+            email: e.target.email.value,
+            department: e.target.department.value,
+            designation: e.target.designation.value
+        }
+        setEmployees((e) => [...employees, temp]);
+        setIsAddModalVisible(false);
     }
 
     function handleEmployeeEdit(e) {
-        // todo {axios call to edit an employee}
         e.preventDefault();
+        const temp = {
+            id: editEmployeeId,
+            name: e.target.name.value,
+            email: e.target.email.value,
+            department: e.target.department.value,
+            designation: e.target.designation.value
+        }
+        setEmployees((e) => [...e.filter(emp => emp.id != temp.id), temp]);
+        setEditEmployeeId(null);
+        setIsEditModalVisible(false);
     }
 
     return (
@@ -124,24 +150,28 @@ function ManageEmployees() {
                             placeholder="Name"
                             required
                             className="w-full border px-3 py-2 rounded"
+                            defaultValue={editEmployeeId != null?  employees.find(e => e.id == editEmployeeId).name : ""}
                         />
                         <input
                             name="email"
                             placeholder="Email"
                             required
                             className="w-full border px-3 py-2 rounded"
+                            defaultValue={editEmployeeId != null?  employees.find(e => e.id == editEmployeeId).email : ""}
                         />
                         <input
                             name="department"
                             placeholder="Department"
                             required
                             className="w-full border px-3 py-2 rounded"
+                            defaultValue={editEmployeeId != null?  employees.find(e => e.id == editEmployeeId).department : ""}
                         />
                         <input
                             name="designation"
                             placeholder="Designation"
                             required
                             className="w-full border px-3 py-2 rounded"
+                            defaultValue={editEmployeeId != null?  employees.find(e => e.id == editEmployeeId).designation : ""}
                         />
                         <div className="text-right">
                             <button
@@ -186,12 +216,14 @@ function ManageEmployees() {
                                             style={{ color: "#718769" }}
                                             className="mr-2 hover:underline"
                                             onClick={handleEditClick}
+                                            data-id={e.id}
                                         >
                                             Edit
                                         </button>
                                         <button
                                             className="text-red-600 hover:underline"
                                             onClick={handleDeletion}
+                                            data-id={e.id}
                                         >
                                             Delete
                                         </button>
