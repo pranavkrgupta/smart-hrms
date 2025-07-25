@@ -13,6 +13,7 @@ import EmployeeLayout from "./layouts/EmployeeLayout";
 import Dashboard from "./pages/Employee/Dashboard";
 import AdminProfile from "./pages/admin/Profile";
 import AdminSettings from "./pages/admin/Settings";
+import AdminDashboard from "./pages/admin/Dashboard"
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
       <Route path="/" element={<Login />} />
       {/* Admin Route */}
       <Route path="/admin" element={<AdminLayout />}>
+        <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="profile" element={<AdminProfile />} />
         <Route path="settings" element={<AdminSettings />} />
         <Route path="manage-leave" element={<LeaveManagement />} />
