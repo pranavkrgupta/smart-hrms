@@ -23,6 +23,7 @@ function App() {
       <Route path="/" element={<Login />} />
       {/* Admin Route */}
       <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<AdminDashboard />} />
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="profile" element={<AdminProfile />} />
         <Route path="settings" element={<AdminSettings />} />
@@ -35,12 +36,13 @@ function App() {
 
       {/* Employee Route */}
       <Route path="/employee" element={<EmployeeLayout />}>
+        <Route index element={<Dashboard />} />
+        <Route path="dashboard" element={<Dashboard />} />
         <Route path="leave" element={<Leave />} />
         <Route path="settings" element={<Settings />} />
         <Route path="salaryDetails" element={<SalaryDetails />} />
         <Route path="attendance" element={<Attendance />} />
         <Route path="profile" element={<Profile />} />
-        <Route path="dashboard" element={<Dashboard />} />
       </Route>
 
     </Routes>
