@@ -11,6 +11,8 @@ import ManageDepartments from "./pages/admin/ManageDepartment";
 import AdminLayout from "./layouts/AdminLayout";
 import EmployeeLayout from "./layouts/EmployeeLayout";
 import Dashboard from "./pages/Employee/Dashboard";
+import AdminProfile from "./pages/admin/Profile";
+import AdminSettings from "./pages/admin/Settings";
 
 function App() {
   return (
@@ -18,6 +20,8 @@ function App() {
       <Route path="/" element={<Login />} />
       {/* Admin Route */}
       <Route path="/admin" element={<AdminLayout />}>
+        <Route path="profile" element={<AdminProfile />} />
+        <Route path="settings" element={<AdminSettings />} />
         <Route path="manage-leave" element={<LeaveManagement />} />
         <Route path="manage-attendance" element={<AttendanceManagement />} />
         <Route path="manage-employees" element={<ManageEmployees />} />
