@@ -19,34 +19,40 @@ public class Leaves extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    @NotNull(message = "User must not be null")
+    @NotNull(message = "User is mandatory")
     private User user;
 
-    @Column(nullable = false)
-    @NotNull(message = "From date is required")
-    @FutureOrPresent(message = "From date cannot be in the past")
+    @NotNull(message = "From date is mandatory")
+    @Column(name = "from_date", nullable = false)
     private LocalDate fromDate;
 
-    @Column(nullable = false)
-    @NotNull(message = "To date is required")
-    @FutureOrPresent(message = "To date cannot be in the past")
+    @NotNull(message = "To date is mandatory")
+    @Column(name = "to_date", nullable = false)
     private LocalDate toDate;
 
-    @Column(nullable = false)
     @NotBlank(message = "Reason cannot be blank")
-    @Size(min = 5, max = 255, message = "Reason must be between 5 and 255 characters")
+    @Column(name = "reason", columnDefinition = "TEXT", nullable = false)
     private String reason;
 
+    @NotNull(message = "Status is mandatory")
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @NotNull(message = "Leave status is required")
+    @Column(name = "status", nullable = false, columnDefinition = "ENUM('Pending', 'Approved', 'Rejected')")
     private LeaveStatus status;
 
+    @NotNull(message = "Type is mandatory")
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @NotNull(message = "Leave type is required")
+    @Column(name = "type", nullable = false, columnDefinition = "ENUM('Sick', 'Casual', 'Earned')")
     private LeaveType type;
 
-    @Size(max = 500, message = "Comment can be up to 500 characters")
+    @Column(name = "comment", columnDefinition = "TEXT")
     private String comment;
+    
+    // Custom validation method to ensure fromDate <= toDate
+    @AssertTrue(message = "From date must be before or equal to To date")
+    public boolean isFromDateBeforeOrEqualToToDate() {
+        if (fromDate == null || toDate == null) {
+            return true; // Not responsibility of this check
+        }
+        return !fromDate.isAfter(toDate);
+    }
 }
