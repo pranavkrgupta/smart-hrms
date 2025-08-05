@@ -3,15 +3,20 @@ package com.hrms.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.hrms.dto.UserReqDto;
 import com.hrms.dto.UserRespDto;
 import com.hrms.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -27,5 +32,11 @@ public class UserController {
 	public ResponseEntity<List<UserRespDto>> getAllUsers() {
 		return ResponseEntity.ok(userService.getAllUsersWithDesignationAndDepartment());
 	}
-	
+
+	@PostMapping("/add")
+	@Operation(description = "Add New Employee")
+	public ResponseEntity<?> addUser(@Valid @RequestBody UserReqDto userReqDto) {
+		UserRespDto createdUser = userService.createUser(userReqDto);
+		return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+	}
 }

@@ -29,6 +29,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
@@ -37,6 +38,7 @@ import lombok.Setter;
 
 @Entity 
 @Table(name = "Users")
+@ToString
 public class User extends BaseEntity{
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
