@@ -24,7 +24,7 @@ public class Leaves extends BaseEntity {
 
     @Column(nullable = false)
     @NotNull(message = "From date is required")
-    @FutureOrPresent(message = "From date cannot be in the past")
+    @FutureOrPresent(message = "From date cannot be in the  past")
     private LocalDate fromDate;
 
     @Column(nullable = false)
