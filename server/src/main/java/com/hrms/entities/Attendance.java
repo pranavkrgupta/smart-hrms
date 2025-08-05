@@ -52,9 +52,9 @@ public class Attendance extends BaseEntity {
 			durationInMinutes = (int) Math.max(minutes, 0);
 
 			if (durationInMinutes >= FULL_DAY_DURATION) {
-				status = AttendanceStatus.ACCEPTED; // Full day
+				status = AttendanceStatus.ACCEPTED; 				// Full day
 			} else if (durationInMinutes >= HALF_DAY_DURATION) {
-				status = AttendanceStatus.HALF_DAY; // Half day
+				status = AttendanceStatus.HALF_DAY; 				// Half day
 			} else {
 				status = AttendanceStatus.REJECTED;
 			}
