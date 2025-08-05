@@ -10,6 +10,9 @@ import java.time.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "Attendance", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"user_id", "date"})
+})
 @ToString
 public class Attendance extends BaseEntity {
 
@@ -22,18 +25,21 @@ public class Attendance extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @NotNull(message = "Date is required")
-    @Column(nullable = false)
+    @NotNull(message = "Date is mandatory")
+    @Column(name = "date", nullable = false)
     private LocalDate date;
-
+    
+    @Column(name = "check_in")
     private LocalTime checkIn;
 
+    @Column(name = "check_out")
     private LocalTime checkOut;
 
-    @Min(value = 0, message = "Duration must be 0 or more minutes")
+    @Min(value = 0, message = "Duration must be non-negative")
+    @Column(name = "duration_in_minutes")
     private Integer durationInMinutes;
 
-    @NotNull(message = "Status is required")
     @Enumerated(EnumType.STRING)
+    @Column(name = "status", columnDefinition = "ENUM('Pending', 'Accepted', 'Rejected')")
     private AttendanceStatus status;
 }
