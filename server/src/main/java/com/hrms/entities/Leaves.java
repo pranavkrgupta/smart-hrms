@@ -1,14 +1,17 @@
 package com.hrms.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import java.time.*;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class Leaves {
+@ToString
+public class Leaves extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,28 +19,40 @@ public class Leaves {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private Users user;
+    @NotNull(message = "User is mandatory")
+    private User user;
 
-    @Column(nullable = false)
+    @NotNull(message = "From date is mandatory")
+    @Column(name = "from_date", nullable = false)
     private LocalDate fromDate;
 
-    @Column(nullable = false)
+    @NotNull(message = "To date is mandatory")
+    @Column(name = "to_date", nullable = false)
     private LocalDate toDate;
 
-    @Column(nullable = false)
+    @NotBlank(message = "Reason cannot be blank")
+    @Column(name = "reason", columnDefinition = "TEXT", nullable = false)
     private String reason;
 
+    @NotNull(message = "Status is mandatory")
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false, columnDefinition = "ENUM('Pending', 'Approved', 'Rejected')")
     private LeaveStatus status;
 
+    @NotNull(message = "Type is mandatory")
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "type", nullable = false, columnDefinition = "ENUM('Sick', 'Casual', 'Earned')")
     private LeaveType type;
 
+    @Column(name = "comment", columnDefinition = "TEXT")
     private String comment;
-
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
+    
+    // Custom validation method to ensure fromDate <= toDate
+    @AssertTrue(message = "From date must be before or equal to To date")
+    public boolean isFromDateBeforeOrEqualToToDate() {
+        if (fromDate == null || toDate == null) {
+            return true; // Not responsibility of this check
+        }
+        return !fromDate.isAfter(toDate);
+    }
 }
