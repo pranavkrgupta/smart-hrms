@@ -63,4 +63,12 @@ public class UserServiceImpl implements UserService {
 		return dto;
 	}
 
+	@Override
+	public UserRespDto getUserById(Long user_id) {
+		User UserEntity = userDao.findById(user_id).orElseThrow(()-> new ResourceNotFoundException("User Not Found"));
+		UserRespDto dto = modelMapper.map(UserEntity, UserRespDto.class);
+		dto.setDepartmentName(UserEntity.getDesignation().getDepartment().getName());
+		return dto;
+	}
+
 }

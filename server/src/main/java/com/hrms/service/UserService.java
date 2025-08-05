@@ -13,6 +13,8 @@ public interface UserService {
 	List<UserRespDto> getAllUsersWithDesignationAndDepartment();
 
 	UserRespDto createUser(@Valid UserReqDto userReqDto);
+
+	UserRespDto getUserById(Long user_id);
 	
 	
 }
