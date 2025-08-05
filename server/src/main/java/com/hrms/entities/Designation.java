@@ -1,5 +1,7 @@
 package com.hrms.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -48,6 +50,7 @@ public class Designation extends BaseEntity {
 	 * NULL values.
 	 */
 	
+	@JsonIgnore
 	@NotNull(message = "Department is required")
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "department_id", nullable = false)
