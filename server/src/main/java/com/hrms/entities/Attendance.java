@@ -7,17 +7,15 @@ import java.time.*;
 
 
 import jakarta.persistence.Entity;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 
-
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class Attendance {
+@ToString
+public class Attendance extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,7 +23,7 @@ public class Attendance {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private Users user;
+    private User user;
 
     @Column(nullable = false)
     private LocalDate date;
@@ -39,8 +37,6 @@ public class Attendance {
     @Enumerated(EnumType.STRING)
     private AttendanceStatus status;
 
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
+ 
 }
 

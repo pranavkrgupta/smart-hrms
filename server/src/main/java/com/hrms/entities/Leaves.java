@@ -4,11 +4,14 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.*;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class Leaves {
+@ToString
+
+public class Leaves extends BaseEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,7 +19,7 @@ public class Leaves {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private Users user;
+    private User user;
 
     @Column(nullable = false)
     private LocalDate fromDate;
@@ -37,7 +40,4 @@ public class Leaves {
 
     private String comment;
 
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
 }
