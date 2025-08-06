@@ -47,20 +47,25 @@ public class Attendance extends BaseEntity {
 	@PrePersist
 	@PreUpdate
 	private void calculateDurationAndUpdateStatus() {
-		if (checkIn != null && checkOut != null) {
-			long minutes = Duration.between(checkIn, checkOut).toMinutes();
-			durationInMinutes = (int) Math.max(minutes, 0);
+	    if (checkIn != null && checkOut != null) {
+	        long minutes = Duration.between(checkIn, checkOut).toMinutes();
+	        if (minutes < 0) {
+	          // Handle overnight shifts or invalid time, e.g. treat as zero or throw error
+	          minutes = 0;
+	        }
+	        durationInMinutes = (int) minutes;
 
-			if (durationInMinutes >= FULL_DAY_DURATION) {
-				status = AttendanceStatus.ACCEPTED; 				// Full day
-			} else if (durationInMinutes >= HALF_DAY_DURATION) {
-				status = AttendanceStatus.HALF_DAY; 				// Half day
-			} else {
-				status = AttendanceStatus.REJECTED;
-			}
-		} else {
-			durationInMinutes = null;
-			status = AttendanceStatus.PENDING;
-		}
+	        if (durationInMinutes >= FULL_DAY_DURATION) {
+	          status = AttendanceStatus.ACCEPTED;
+	        } else if (durationInMinutes >= HALF_DAY_DURATION) {
+	          status = AttendanceStatus.HALF_DAY;
+	        } else {
+	          status = AttendanceStatus.REJECTED;
+	        }
+	    } else {
+	        durationInMinutes = 0;
+	        status = AttendanceStatus.PENDING;
+	    }
 	}
+
 }
