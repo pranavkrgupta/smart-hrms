@@ -7,7 +7,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import com.hrms.dao.DepartmentDao;
-import com.hrms.dto.DepartmentDTO;
+import com.hrms.dto.DepartmentReqDto;
+import com.hrms.dto.DepartmentResDto;
 import com.hrms.entities.Department;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -21,23 +22,22 @@ public class DepartmentServiceImpl implements DepartmentService {
 	private final ModelMapper modelMapper;
 	private DepartmentDao dao;
 
-
 	@Override
-	public List<DepartmentDTO> getAllDepartments() {
-		return dao.findAll().stream().map(dep -> modelMapper.map(dep, DepartmentDTO.class)).toList();
+	public List<DepartmentResDto> getAllDepartments() {
+		return dao.findAll().stream().map(dep -> modelMapper.map(dep, DepartmentResDto.class)).toList();
 	}
 
 	@Override
-	public DepartmentDTO createDepartment(DepartmentDTO depDto) {
+	public DepartmentResDto createDepartment(DepartmentReqDto depDto) {
 		if (dao.existsByName(depDto.getName())) {
 			throw new IllegalArgumentException("Department name already exists");
 		}
 		Department res = dao.save(modelMapper.map(depDto, Department.class));
-		return modelMapper.map(res, DepartmentDTO.class);
+		return modelMapper.map(res, DepartmentResDto.class);
 	}
 
 	@Override
-	public DepartmentDTO updateDepartment(Long id, @Valid DepartmentDTO dto) {
+	public DepartmentResDto updateDepartment(Long id, @Valid DepartmentReqDto dto) {
 		Optional<Department> dep = dao.findById(id);
 		if (dep.isEmpty()) {
 			throw new EntityNotFoundException("Deparment does not exist.");
@@ -46,7 +46,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 			tempDep.setName(dto.getName());
 			tempDep.setDescription(dto.getDescription());
 			dao.save(tempDep);
-			return modelMapper.map(tempDep, DepartmentDTO.class);
+			return modelMapper.map(tempDep, DepartmentResDto.class);
 		}
 	}
 
