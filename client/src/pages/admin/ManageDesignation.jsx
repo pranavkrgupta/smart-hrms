@@ -8,6 +8,15 @@ export default function ManageDesignation() {
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [searchKeyword, setSearchKeyword] = useState("");
     const [editDesignationId, setEditDesignationId] = useState(null);
+    const [editDepartmentId, setEditDepartmentId] = useState(null);
+    const [refreshFlag, setRefreshFlag] = useState(false);
+
+    // finds unique departments from designations
+    const departments = designations.filter((d, ind, self) => {
+        return ind === self.findIndex((t) => (
+            t.departmentId === d.departmentId && t.departmentName === d.departmentName
+        ));
+    })
 
     useEffect(() => {
         axios.get("http://localhost:8080/api/designations")
@@ -17,7 +26,7 @@ export default function ManageDesignation() {
             .catch(err => {
                 console.error("Error fetching designations:", err);
             });
-    }, []);
+    }, [refreshFlag]);
 
     const matchedDesignations = searchKeyword == "" ? designations : designations.filter(d => d.name.toLowerCase().includes(searchKeyword.toLowerCase()));
 
@@ -39,12 +48,18 @@ export default function ManageDesignation() {
     function handleDesignationtEdit(e) {
         e.preventDefault()
         const temp = {
-            designationId: editDesignationId,
             name: e.target.name.value,
             description: e.target.description.value,
+            departmentId: editDepartmentId,
         }
-        setDesignations(d => [...d.filter(des => des.designationId != temp.designationId), temp])
+        axios.put(`http://localhost:8080/api/designations/${editDesignationId}`, temp).then(res => {
+            console.log("Designation updated successfully:", res.data);
+            setRefreshFlag(!refreshFlag);
+        }).catch(err => {
+            console.error("Error updating designation:", err);
+        });
         setEditDesignationId(null);
+        setEditDepartmentId(null);
         setIsEditModalVisible(false)
     }
 
@@ -73,12 +88,6 @@ export default function ManageDesignation() {
                     title="Add New Designation"
                 >
                     <form onSubmit={handleDesignationAddition} className="space-y-4">
-                        <input
-                            name="designationId"
-                            placeholder="Id"
-                            required
-                            className="w-full border px-3 py-2 rounded"
-                        />
                         <input
                             name="name"
                             placeholder="Designation name"
@@ -124,6 +133,13 @@ export default function ManageDesignation() {
                             className="w-full border px-3 py-2 rounded"
                             defaultValue={editDesignationId == null ? "" : designations.find(d => d.designationId == editDesignationId).description}
                         />
+                        <select className="w-full border px-3 py-2 rounded"  onChange={(e) => {
+                            setEditDepartmentId(e.target.value)
+                        }} defaultValue={"default"}>
+                            <option value="default" disabled>Select Department</option>
+                            {
+                                departments.map((d) => (<option key={d.departmentId} value={d.departmentId}>{d.departmentName}</option>))}
+                        </select>
                         <div className="text-right">
                             <button
                                 type="submit"
@@ -148,6 +164,7 @@ export default function ManageDesignation() {
                             <th className="border p-2">ID</th>
                             <th className="border p-2">Designation Name</th>
                             <th className="border p-2">Description</th>
+                            <th className="border p-2">Department Name</th>
                             <th className="border p-2">Actions</th>
                         </tr>
                     </thead>
@@ -158,6 +175,7 @@ export default function ManageDesignation() {
                                     <td className="border p-2">{d.designationId}</td>
                                     <td className="border p-2">{d.name}</td>
                                     <td className="border p-2">{d.description}</td>
+                                    <td className="border p-2">{d.departmentName}</td>
                                     <td className="border p-2 text-center">
                                         <button
                                             style={{ color: "#718769" }}
