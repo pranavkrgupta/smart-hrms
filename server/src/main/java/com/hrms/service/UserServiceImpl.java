@@ -51,12 +51,13 @@ public class UserServiceImpl implements UserService {
 	public UserRespDto createUser(@Valid UserReqDto userReqDto) {
 		User userEntity = modelMapper.map(userReqDto, User.class);
 		userEntity.setUserId(null); // to avoid update instead of insert
-		userEntity.setUserRole(UserRole.EMPLOYEE);
+		userEntity.setUserRole(UserRole.ROLE_EMPLOYEE);
 
 		Designation designation = designationDao.findByDesignationId(userReqDto.getDesignationId())
 				.orElseThrow(() -> new ResourceNotFoundException("Designation Id is Incorrect"));
 
 		userEntity.setDesignation(designation);
+		userEntity.setPassword(userReqDto.getEmail());
 		userDao.save(userEntity);
 
 		UserRespDto dto = modelMapper.map(userEntity, UserRespDto.class);
@@ -75,18 +76,33 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public ApiResponse updateUser(Long user_id, @Valid UserReqDto userReqDto) {
-		User userEntity = userDao.findById(user_id)
-			.orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
+	    User userEntity = userDao.findById(user_id)
+	        .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
 
-		// Replaces SELECT query with a proxy (no DB hit unless accessed)
-		Designation designation = designationDao.getReferenceById(userReqDto.getDesignationId());
-		
-		// Update fields using DTO
-		modelMapper.map(userReqDto, userEntity);
-		userEntity.setDesignation(designation);
+	    // Get designation proxy
+	    Designation designation = designationDao.getReferenceById(userReqDto.getDesignationId());
 
-		return new ApiResponse("User with id - " + user_id + " updated");
+	    // Map userReqDto into a temporary User object
+	    User tempUser = modelMapper.map(userReqDto, User.class);
+
+	    // Copy fields individually to existing userEntity, but skip userId and designation
+	    userEntity.setName(tempUser.getName());
+	    userEntity.setEmail(tempUser.getEmail());
+	    userEntity.setDob(tempUser.getDob());
+	    userEntity.setGender(tempUser.getGender());
+	    userEntity.setAddress(tempUser.getAddress());
+	    userEntity.setPhone(tempUser.getPhone());
+	    // Don't change password or userRole here if not part of DTO
+
+	    // Now set the designation explicitly
+	    userEntity.setDesignation(designation);
+
+	    // Save updated user
+	    userDao.save(userEntity);
+
+	    return new ApiResponse("User with id - " + user_id + " updated");
 	}
+
 
 	@Override
 	public ApiResponse deleteUser(Long user_id) {

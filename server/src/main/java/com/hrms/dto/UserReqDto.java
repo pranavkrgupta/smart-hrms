@@ -33,11 +33,6 @@ public class UserReqDto {
     @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
     private String name;
 
-    @NotBlank(message = "Password is mandatory")
-    @Size(min = 8, max = 255, message = "Password must be between 8 and 255 characters")
-    @JsonProperty(access = Access.WRITE_ONLY) // hide password in JSON responses
-    private String password;
-
     @Past(message = "Date of birth must be in the past")
     private LocalDate dob;
 

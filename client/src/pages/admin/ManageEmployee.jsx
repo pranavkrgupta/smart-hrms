@@ -4,6 +4,8 @@ import {
   getEmployeeById,
   getEmployees,
   deleteEmployeeById,
+  addEmployee,
+  updateEmployeeById,
 } from "../../services/employeeService";
 import { getDesignations } from "../../services/designationService";
 
@@ -87,29 +89,51 @@ function ManageEmployees() {
 
   function handleEmployeeAddition(e) {
     e.preventDefault();
-    const temp = {
-      id: e.target.id.value,
+
+    const newEmployee = {
       name: e.target.name.value,
       email: e.target.email.value,
-      department: e.target.department.value,
-      designation: e.target.designation.value,
+      dob: e.target.dob.value,
+      gender: e.target.gender.value,
+      address: e.target.address.value,
+      phone: e.target.phone.value,
+      designationId: e.target.designationId.value,
     };
-    setEmployees((e) => [...employees, temp]);
-    setIsAddModalVisible(false);
+
+    addEmployee(newEmployee)
+      .then((res) => {
+        setEmployees((prev) => [...prev, res.data]);
+        setIsAddModalVisible(false);
+      })
+      .catch((err) => {
+        console.error("Error adding employee", err);
+        alert("Failed to add employee.");
+      });
   }
 
   function handleEmployeeEdit(e) {
     e.preventDefault();
-    const temp = {
-      id: editEmployeeId,
-      name: e.target.name.value,
-      email: e.target.email.value,
-      department: e.target.department.value,
-      designation: e.target.designation.value,
+    const updatedData = {
+      name: employee.name,
+      email: employee.email,
+      phone: employee.phone,
+      gender: employee.gender,
+      dob: employee.dob,
+      address: employee.address,
+      designationId: employee.designationId,
     };
-    setEmployees((e) => [...e.filter((emp) => emp.id != temp.id), temp]);
-    setEditEmployeeId(null);
-    setIsEditModalVisible(false);
+
+    updateEmployeeById(editEmployeeId, updatedData)
+      .then(() => {
+        // Fetch the entire list again to get latest data
+        fetchEmployees();
+        setEditEmployeeId(null);
+        setIsEditModalVisible(false);
+      })
+      .catch((err) => {
+        console.error("Error updating employee", err);
+        alert("Failed to update employee.");
+      });
   }
 
   return (
@@ -140,12 +164,6 @@ function ManageEmployees() {
             <input
               name="email"
               placeholder="Email"
-              required
-              className="w-full border px-3 py-2 rounded"
-            />
-            <input
-              name="password"
-              placeholder="Password"
               required
               className="w-full border px-3 py-2 rounded"
             />
@@ -185,7 +203,7 @@ function ManageEmployees() {
             >
               <option value="">Select Designation</option>
               {designations.map((d) => (
-                <option key={d.id} value={d.id}>
+                <option key={d.designationId} value={d.designationId}>
                   {d.name}
                 </option>
               ))}
@@ -288,7 +306,7 @@ function ManageEmployees() {
             >
               <option value="">Select Designation</option>
               {designations.map((d) => (
-                <option key={d.id} value={d.id}>
+                <option key={d.designationId} value={d.designationId}>
                   {d.name}
                 </option>
               ))}

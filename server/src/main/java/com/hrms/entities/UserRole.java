@@ -1,6 +1,6 @@
 package com.hrms.entities;
 
 public enum UserRole {
-	ADMIN,
-    EMPLOYEE
+	ROLE_ADMIN,
+    ROLE_EMPLOYEE
 }

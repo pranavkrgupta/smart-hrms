@@ -84,6 +84,6 @@ public class User extends BaseEntity{
 
     @NotNull(message = "User role is mandatory")
     @Enumerated(EnumType.STRING)
-    @Column(name = "user_role", nullable = false, columnDefinition = "ENUM('ADMIN','EMPLOYEE')")
+    @Column(name = "user_role", nullable = false, columnDefinition = "ENUM('ROLE_ADMIN','ROLE_EMPLOYEE')")
     private UserRole userRole;
 }

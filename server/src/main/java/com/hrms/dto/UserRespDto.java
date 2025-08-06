@@ -16,6 +16,7 @@ public class UserRespDto {
     private Gender gender;
     private String address;
     private String phone;
+    private Long designationId; 
     private String designationName;
     private String departmentName;
     private UserRole userRole;
