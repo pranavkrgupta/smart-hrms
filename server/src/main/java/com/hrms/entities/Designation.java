@@ -1,7 +1,5 @@
 package com.hrms.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -12,9 +10,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,13 +29,12 @@ import lombok.Setter;
  * manually.
  */
 
-@Table(name = "designation", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "department_id" }) })
+@Table(name = "designations", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "department_id" }) })
 public class Designation extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer designationId;
+	private Long designationId;
 
-	@NotBlank(message = "Designation name cannot be blank")
 	@Column(name = "name", nullable = false, length = 100)
 	private String name;
 
@@ -49,14 +43,11 @@ public class Designation extends BaseEntity {
 	 * implicit. FK by itself won't enforce complete participation as it can contain
 	 * NULL values.
 	 */
-	
-	@JsonIgnore
-	@NotNull(message = "Department is required")
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "department_id", nullable = false)
 	private Department department;
 
-	@Size(max = 255, message = "Description must be at most 255 characters")
 	private String description;
 
 }
