@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import Modal from "../../components/Modal";
-import { getEmployees } from "../../services/departmentService";
+// import { getEmployees } from "../../services/departmentService";
 import axios from "axios";
 
 export default function ManageDepartments() {
@@ -13,9 +13,8 @@ export default function ManageDepartments() {
 
     const matchedDepartments = searchKeyword == "" ? departments : departments.filter(d => d.name.toLowerCase().includes(searchKeyword.toLowerCase()));
 
-
     useEffect(() => {
-        getEmployees().then(res => {
+        axios.get("http://localhost:8080/api/departments").then(res => {
             setDepartments(res.data);
         }).catch(err => {
             console.error("Error fetching departments:", err);
@@ -73,7 +72,13 @@ export default function ManageDepartments() {
 
     function handleDelete(e) {
         const depId = e.target.getAttribute("data-id");
-        setDepartments(d => d.filter(dep => dep.id != depId))
+        axios.delete(`http://localhost:8080/api/departments/${depId}`)
+            .then(res => {
+                console.log("Department deleted successfully:", res.data);
+                setRefreshFlag(!refreshFlag);
+            }).catch(err => {
+                console.error("Error deleting department:", err);
+            });
     }
 
     return (
