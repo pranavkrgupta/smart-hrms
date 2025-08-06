@@ -26,13 +26,14 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/users")
 public class UserController {
 
 	@Autowired
 	private UserService userService;
 
-	@CrossOrigin(origins = "http://localhost:5173")
+//	@CrossOrigin(origins = "http://localhost:5173")
 	@GetMapping
 	@Operation(description = "Get All Users")
 	public ResponseEntity<List<UserRespDto>> getAllUsers() {

@@ -1,10 +1,19 @@
 import { useState, useEffect } from "react";
 import Modal from "../../components/Modal";
-import { getEmployees } from "../../services/employeeService";
+import {
+  getEmployeeById,
+  getEmployees,
+  deleteEmployeeById,
+} from "../../services/employeeService";
+import { getDesignations } from "../../services/designationService";
 
 function ManageEmployees() {
   useEffect(() => {
     fetchEmployees();
+  }, []);
+
+  useEffect(() => {
+    fetchDesignations();
   }, []);
 
   function fetchEmployees() {
@@ -15,8 +24,25 @@ function ManageEmployees() {
       .catch((err) => console.error("Error Fetching employees", err));
   }
 
-  const [employees, setEmployees] = useState([])
+  function fetchDesignations() {
+    getDesignations()
+      .then((res) => {
+        setDesignations(res.data);
+      })
+      .catch((err) => console.error("Error Fetching designations", err));
+  }
 
+  function fetchEmployeeById(id) {
+    getEmployeeById(id)
+      .then((res) => {
+        setEmployee(res.data);
+      })
+      .catch((err) => console.error("Error Fetching Employee by Id", err));
+  }
+
+  const [employees, setEmployees] = useState([]);
+  const [designations, setDesignations] = useState([]);
+  const [employee, setEmployee] = useState({});
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -38,13 +64,25 @@ function ManageEmployees() {
   }
 
   function handleDeletion(e) {
-    const empId = e.target.getAttribute("data-id");
-    setEmployees((e) => [...employees.filter((emp) => emp.id != empId)]);
+    const user_id = e.target.getAttribute("data-id");
+    if (!window.confirm("Are you sure you want to delete this employee ?"))
+      return;
+
+    deleteEmployeeById(user_id)
+      .then(() => {
+        setEmployees((prev) => prev.filter((emp) => emp.userId != user_id));
+      })
+      .catch((err) => {
+        console.error("Error deleting employee", err);
+        alert("Failed to delete employee.");
+      });
   }
 
   function handleEditClick(e) {
+    const user_id = e.target.getAttribute("data-id");
+    setEditEmployeeId(user_id);
+    fetchEmployeeById(user_id);
     setIsEditModalVisible(true);
-    setEditEmployeeId(e.target.getAttribute("data-id"));
   }
 
   function handleEmployeeAddition(e) {
@@ -94,12 +132,6 @@ function ManageEmployees() {
         >
           <form onSubmit={handleEmployeeAddition} className="space-y-4">
             <input
-              name="id"
-              placeholder="Id"
-              required
-              className="w-full border px-3 py-2 rounded"
-            />
-            <input
               name="name"
               placeholder="Name"
               required
@@ -112,17 +144,52 @@ function ManageEmployees() {
               className="w-full border px-3 py-2 rounded"
             />
             <input
-              name="department"
-              placeholder="Department"
+              name="password"
+              placeholder="Password"
               required
               className="w-full border px-3 py-2 rounded"
             />
             <input
-              name="designation"
-              placeholder="Designation"
+              name="dob"
+              type="date"
+              placeholder="DOB"
               required
               className="w-full border px-3 py-2 rounded"
             />
+            <select
+              name="gender"
+              required
+              className="w-full border px-3 py-2 rounded"
+            >
+              <option value="">Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+            <input
+              name="address"
+              placeholder="Address"
+              required
+              className="w-full border px-3 py-2 rounded"
+            />
+            <input
+              name="phone"
+              placeholder="Phone"
+              required
+              className="w-full border px-3 py-2 rounded"
+            />
+            <select
+              name="designationId"
+              required
+              className="w-full border px-3 py-2 rounded"
+            >
+              <option value="">Select Designation</option>
+              {designations.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
             <div className="text-right">
               <button
                 type="submit"
@@ -148,10 +215,9 @@ function ManageEmployees() {
               placeholder="Name"
               required
               className="w-full border px-3 py-2 rounded"
-              defaultValue={
-                editEmployeeId != null
-                  ? employees.find((e) => e.id == editEmployeeId).name
-                  : ""
+              value={employee.name || ""}
+              onChange={(e) =>
+                setEmployee({ ...employee, name: e.target.value })
               }
             />
             <input
@@ -159,34 +225,74 @@ function ManageEmployees() {
               placeholder="Email"
               required
               className="w-full border px-3 py-2 rounded"
-              defaultValue={
-                editEmployeeId != null
-                  ? employees.find((e) => e.id == editEmployeeId).email
-                  : ""
+              value={employee.email || ""}
+              onChange={(e) =>
+                setEmployee({ ...employee, email: e.target.value })
               }
             />
             <input
-              name="department"
-              placeholder="Department"
+              name="dob"
+              type="date"
+              placeholder="DOB"
               required
               className="w-full border px-3 py-2 rounded"
-              defaultValue={
-                editEmployeeId != null
-                  ? employees.find((e) => e.id == editEmployeeId).department
-                  : ""
+              value={employee.dob || ""}
+              onChange={(e) =>
+                setEmployee({ ...employee, dob: e.target.value })
               }
+            />
+
+            <select
+              name="gender"
+              value={employee.gender}
+              onChange={(e) =>
+                setEmployee({ ...employee, gender: e.target.value })
+              }
+              required
+              className="w-full border px-3 py-2 rounded"
+            >
+              <option value="">Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+
+            <input
+              name="address"
+              value={employee.address}
+              onChange={(e) =>
+                setEmployee({ ...employee, address: e.target.value })
+              }
+              placeholder="Address"
+              required
+              className="w-full border px-3 py-2 rounded"
             />
             <input
-              name="designation"
-              placeholder="Designation"
+              name="phone"
+              value={employee.phone}
+              onChange={(e) =>
+                setEmployee({ ...employee, phone: e.target.value })
+              }
+              placeholder="Phone"
               required
               className="w-full border px-3 py-2 rounded"
-              defaultValue={
-                editEmployeeId != null
-                  ? employees.find((e) => e.id == editEmployeeId).designation
-                  : ""
-              }
             />
+            <select
+              name="designationId"
+              required
+              className="w-full border px-3 py-2 rounded"
+              value={employee.designationId || ""}
+              onChange={(e) =>
+                setEmployee({ ...employee, designationId: e.target.value })
+              }
+            >
+              <option value="">Select Designation</option>
+              {designations.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
             <div className="text-right">
               <button
                 type="submit"
@@ -243,14 +349,14 @@ function ManageEmployees() {
                     style={{ color: "#718769" }}
                     className="mr-2 hover:underline"
                     onClick={handleEditClick}
-                    data-id={e.id}
+                    data-id={e.userId}
                   >
                     Edit
                   </button>
                   <button
                     className="text-red-600 hover:underline"
                     onClick={handleDeletion}
-                    data-id={e.id}
+                    data-id={e.userId}
                   >
                     Delete
                   </button>

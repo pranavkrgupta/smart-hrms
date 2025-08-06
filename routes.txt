@@ -1,0 +1,102 @@
+ATTENDANCE MANAGEMENT
+
+action: employee checks in
+route: employees/check-in
+request payload: emp_id
+request type: POST
+transaction logic:
+	=> Insert a new row in the attendance table with check-out, status and duration_in_minutes left as NULL;
+	commit;
+	
+*********************************************************************************************************************************************************************************************
+
+action: employee checks out
+route: employees/check-out
+request payload: emp_id
+request type: POST
+transaction logic:
+	=> reject transaction if check-in for the current date and given emp_id doesn't exist already in the attendance table. 
+	=> reject check-in if a check in already exists for the given emp_id for the current date
+	=> else, calculate current server time in service layer
+		=> fetch the row for the given emp_id and current server date.
+		=> calculate the duration in minutes (server time - check-in time(db))
+		=> set the appropriate status(half, full, absent)
+	commit;
+	
+*********************************************************************************************************************************************************************************************
+
+action: admin edits attendance
+route: admin/manage-attendance
+request payload: {user_email, attendance_id, date, check-in, check-out, status}
+request type: PUT
+transaction logic:
+	=> get user role associated with user_email
+		=> reject if role != hr (regular user's can't manually edit attendance)
+		=> reject if check_out - check_in < 7hrs and status = full
+		-> reject if
+	=> update attendance
+	commit;
+	
+*********************************************************************************************************************************************************************************************
+
+action: admin deletes an attendance
+route: admin/manage-attendance
+request payload: {user_email, attendance_id}
+request type: DELETE
+transaction logic:
+	=> get user role associated with user_email
+		=> reject if role != hr (regular user's can't delete attendance)
+		=> reject if check_out - check_in < 7hrs and status = full
+	=> update attendance
+	commit;
+
+*********************************************************************************************************************************************************************************************
+
+action: employee gets his attendance history
+route: 	employees/attendance
+request payload: {user_email}
+request type: GET
+transaction logic:
+	=> return the attendance associated with the user_email
+	
+*********************************************************************************************************************************************************************************************
+
+LEAVE MANAGEMENT
+
+action: employee applies for leave
+route: leaves/ (TODO)
+request payload: {type, from_date, to_date, reason}
+request type: POST
+transaction logic:
+	=> reject if from_date > to_date
+	=> get the user's email_id from authentication token
+		=> insert a new leave in the leaves table corresponding the user_email with default status pending
+	commit;
+	
+Aside: Employee shouldn't be allowed to edit a leave. Why? A leave get's approved > employee goes back and extends it by a couple of days by changing the to_date. He can be allowed to delete an existing leave and reapply.
+	
+*********************************************************************************************************************************************************************************************
+
+action: admin edits applied leaves
+route: leaves/
+request payload: {leave_id, status, comment}
+token: emp_id(must be HR)
+request type: PUT
+transaction logic:
+	=> update the leave with the corresponding payload received in the request
+	commit;
+	
+*********************************************************************************************************************************************************************************************
+
+action: admin deletes applied leaves
+route: leaves/
+token: emp_id(must be HR)
+request payload: {leave_id}
+token: emp_id(must be HR)
+request type: DELETE
+transaction logic:
+	=> update the leave with the corresponding payload received in the request
+	commit;
+
+*********************************************************************************************************************************************************************************************
+
