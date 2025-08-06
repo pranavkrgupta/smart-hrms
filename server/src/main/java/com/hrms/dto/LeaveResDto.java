@@ -1,28 +1,27 @@
 package com.hrms.dto;
 
-import com.hrms.entities.LeaveStatus;
-import com.hrms.entities.LeaveType;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.AllArgsConstructor;
-
+import lombok.*;
 import java.time.LocalDate;
 
-@NoArgsConstructor
-@AllArgsConstructor
 @Getter
 @Setter
-@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class LeaveResDto {
+
     private Long id;
-    private Long userId;
-    private String userName;
+
+    private Long userId;  // ID of the user who requested the leave
+
     private LocalDate fromDate;
+
     private LocalDate toDate;
+
     private String reason;
-    private LeaveStatus status;
-    private LeaveType type;
+
+    private String status;  // e.g. "Pending", "Approved", "Rejected"
+
+    private String type;    // e.g. "Sick", "Casual", "Earned"
+
     private String comment;
 }

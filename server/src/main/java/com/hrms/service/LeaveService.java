@@ -1,14 +1,17 @@
 package com.hrms.service;
 
-import java.util.List;
 import com.hrms.dto.LeaveDto;
 import com.hrms.dto.LeaveResDto;
 
+import java.util.List;
+
 public interface LeaveService {
-	List<LeaveResDto> getAllLeaves();
-	LeaveDto getLeaveById(Long id);
-	String deleteLeave(Long id);
-	String updateLeave(Long id, LeaveDto leaveDto);
-	String createLeave(Long id,LeaveDto leaveDto);
-	List<LeaveDto> getLeavesByUserId(Long userId);
+    
+    List<LeaveResDto> getLeavesByUser(Long userId);
+
+    void createLeave(Long userId, LeaveDto leaveDto);
+
+    void updateLeave(Long leaveId, LeaveDto leaveDto);
+
+    void deleteLeave(Long leaveId);
 }
