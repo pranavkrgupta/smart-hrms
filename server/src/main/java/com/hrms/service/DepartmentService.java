@@ -7,9 +7,9 @@ import jakarta.validation.Valid;
 public interface DepartmentService {
 	List<DepartmentDTO> getAllDepartments();
 
-	DepartmentDTO createDepartment(@Valid DepartmentDTO dto);
+	DepartmentDTO createDepartment( DepartmentDTO dto);
 
-	DepartmentDTO updateDepartment(Long id, @Valid DepartmentDTO dto);
+	DepartmentDTO updateDepartment(Long id,  DepartmentDTO dto);
 
 	void deleteDepartment(Long id);
 	

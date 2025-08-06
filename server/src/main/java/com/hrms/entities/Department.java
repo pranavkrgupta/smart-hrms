@@ -10,13 +10,14 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.ToString;
 
 @Entity
-@ToString
 @Data
+@Table(name="departments")
 public class Department extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,7 +31,6 @@ public class Department extends BaseEntity {
 	private String description;
 
 	@OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
-	@ToString.Exclude
 	private List<Designation> designations = new ArrayList<>();
 
 }
