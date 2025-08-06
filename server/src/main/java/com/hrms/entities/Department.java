@@ -16,8 +16,9 @@ import lombok.Data;
 import lombok.ToString;
 
 @Entity
-@Data
 @Table(name="departments")
+@ToString
+@Data
 public class Department extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,6 +32,7 @@ public class Department extends BaseEntity {
 	private String description;
 
 	@OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
+	@ToString.Exclude
 	private List<Designation> designations = new ArrayList<>();
 
 }
