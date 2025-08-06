@@ -1,24 +1,26 @@
 import { useEffect, useState } from "react"
 import Modal from "../../components/Modal";
 import { getEmployees } from "../../services/departmentService";
+import axios from "axios";
 
 export default function ManageDepartments() {
     const [departments, setDepartments] = useState([]);
-    
+    const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+    const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+    const [searchKeyword, setSearchKeyword] = useState("");
+    const [editDepartmentId, setEditDepartmentId] = useState(null);
+    const [refreshFlag, setRefreshFlag] = useState(false);
+
+    const matchedDepartments = searchKeyword == "" ? departments : departments.filter(d => d.departmentName.toLowerCase().includes(searchKeyword.toLowerCase()));
+
+
     useEffect(() => {
         getEmployees().then(res => {
             setDepartments(res.data);
         }).catch(err => {
             console.error("Error fetching departments:", err);
         });
-    }, []);
-
-    const [isAddModalVisible, setIsAddModalVisible] = useState(false);
-    const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-    const [searchKeyword, setSearchKeyword] = useState("");
-    const [editDepartmentId, setEditDepartmentId] = useState(null);
-
-    const matchedDepartments = searchKeyword == "" ? departments : departments.filter(d => d.departmentName.toLowerCase().includes(searchKeyword.toLowerCase()));
+    }, [refreshFlag]);
 
     function handleAddClick(e) {
         setIsAddModalVisible(true);
@@ -27,12 +29,19 @@ export default function ManageDepartments() {
     function handleDepartmentAddition(e) {
         e.preventDefault();
         const temp = {
-            id: e.target.id.value,
-            departmentName: e.target.departmentName.value,
+            name: e.target.name.value,
             description: e.target.description.value,
         }
-        setDepartments((d) => [...departments, temp]);
+        axios.post("http://localhost:8080/api/departments", temp)
+            .then(res => {
+                console.log("Department added successfully:", res.data);
+                setRefreshFlag(!refreshFlag);
+            }).catch(err => {
+                console.error("Error adding department:", err);
+            });
+
         setIsAddModalVisible(false);
+
     }
 
     function handleDepartmentEdit(e) {
@@ -73,13 +82,7 @@ export default function ManageDepartments() {
                 >
                     <form onSubmit={handleDepartmentAddition} className="space-y-4">
                         <input
-                            name="id"
-                            placeholder="Id"
-                            required
-                            className="w-full border px-3 py-2 rounded"
-                        />
-                        <input
-                            name="departmentName"
+                            name="name"
                             placeholder="Department name"
                             required
                             className="w-full border px-3 py-2 rounded"

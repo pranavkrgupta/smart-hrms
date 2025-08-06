@@ -4,8 +4,6 @@ import java.util.List;
 import com.hrms.dto.DepartmentReqDto;
 import com.hrms.dto.DepartmentResDto;
 
-import jakarta.validation.Valid;
-
 public interface DepartmentService {
 	List<DepartmentResDto> getAllDepartments();
 
