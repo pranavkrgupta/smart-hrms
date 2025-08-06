@@ -5,18 +5,18 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Employee/Dashboard";
 import Leave from "./pages/Employee/Leave";
 import Settings from "./pages/Employee/Settings";
-import Profile from './pages/Employee/Profile';
+import Profile from "./pages/Employee/Profile";
 import Attendance from "./pages/Employee/Attendance";
 import SalaryDetails from "./pages/Employee/SalaryDetails";
 import ManageEmployees from "./pages/admin/ManageEmployee";
 import LeaveManagement from "./pages/admin/LeaveManagement";
 import AttendanceManagement from "./pages/admin/AttendanceManagement";
 import ManageDepartments from "./pages/admin/ManageDepartment";
-import ManageDesignation from './pages/admin/ManageDesignation';
+import ManageDesignation from "./pages/admin/ManageDesignation";
 import AdminProfile from "./pages/admin/Profile";
 import AdminSettings from "./pages/admin/Settings";
-import AdminDashboard from "./pages/admin/Dashboard"
-
+import AdminDashboard from "./pages/admin/Dashboard";
+import Salary from "./pages/admin/Salary";
 function App() {
   return (
     <Routes>
@@ -32,6 +32,7 @@ function App() {
         <Route path="manage-employees" element={<ManageEmployees />} />
         <Route path="manage-departments" element={<ManageDepartments />} />
         <Route path="manage-designations" element={<ManageDesignation />} />
+        <Route path="Salary" element={<Salary />} />
       </Route>
 
       {/* Employee Route */}
@@ -44,7 +45,6 @@ function App() {
         <Route path="attendance" element={<Attendance />} />
         <Route path="profile" element={<Profile />} />
       </Route>
-
     </Routes>
   );
 }
