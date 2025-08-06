@@ -1,32 +1,25 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Modal from "../../components/Modal";
-
+// import { getEmployees } from "../../services/departmentService";
+import axios from "axios";
 
 export default function ManageDepartments() {
-    const [departments, setDepartments] = useState([
-        {
-            id: 1,
-            departmentName: "Human Resources",
-            description: "Handles HR tasks."
-        },
-        {
-            id: 2,
-            departmentName: "IT",
-            description: "Tech Support and Development."
-        },
-        {
-            id: 3,
-            departmentName: "Sales",
-            description: "Client management."
-        }
-    ])
-
+    const [departments, setDepartments] = useState([]);
     const [isAddModalVisible, setIsAddModalVisible] = useState(false);
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [searchKeyword, setSearchKeyword] = useState("");
     const [editDepartmentId, setEditDepartmentId] = useState(null);
+    const [refreshFlag, setRefreshFlag] = useState(false);
 
-    const matchedDepartments = searchKeyword == "" ? departments : departments.filter(d => d.departmentName.toLowerCase().includes(searchKeyword.toLowerCase()));
+    const matchedDepartments = searchKeyword == "" ? departments : departments.filter(d => d.name.toLowerCase().includes(searchKeyword.toLowerCase()));
+
+    useEffect(() => {
+        axios.get("http://localhost:8080/api/departments").then(res => {
+            setDepartments(res.data);
+        }).catch(err => {
+            console.error("Error fetching departments:", err);
+        });
+    }, [refreshFlag]);
 
     function handleAddClick(e) {
         setIsAddModalVisible(true);
@@ -35,22 +28,35 @@ export default function ManageDepartments() {
     function handleDepartmentAddition(e) {
         e.preventDefault();
         const temp = {
-            id: e.target.id.value,
-            departmentName: e.target.departmentName.value,
+            name: e.target.name.value,
             description: e.target.description.value,
         }
-        setDepartments((d) => [...departments, temp]);
+        axios.post("http://localhost:8080/api/departments", temp)
+            .then(res => {
+                console.log("Department added successfully:", res.data);
+                setRefreshFlag(!refreshFlag);
+            }).catch(err => {
+                console.error("Error adding department:", err);
+            });
+
         setIsAddModalVisible(false);
+
     }
 
     function handleDepartmentEdit(e) {
         e.preventDefault()
         const temp = {
-            id: editDepartmentId,
-            departmentName: e.target.departmentName.value,
+            name: e.target.departmentName.value,
             description: e.target.description.value,
         }
-        setDepartments(d => [...d.filter(dep => dep.id != temp.id), temp])
+
+        axios.put(`http://localhost:8080/api/departments/${editDepartmentId}`, temp)
+            .then(res => {
+                console.log("Department updated successfully:", res.data);
+                setRefreshFlag(!refreshFlag);
+            }).catch(err => {
+                console.error("Error updating department:", err);
+            });
         setEditDepartmentId(null);
         setIsEditModalVisible(false)
     }
@@ -66,7 +72,13 @@ export default function ManageDepartments() {
 
     function handleDelete(e) {
         const depId = e.target.getAttribute("data-id");
-        setDepartments(d => d.filter(dep => dep.id != depId))
+        axios.delete(`http://localhost:8080/api/departments/${depId}`)
+            .then(res => {
+                console.log("Department deleted successfully:", res.data);
+                setRefreshFlag(!refreshFlag);
+            }).catch(err => {
+                console.error("Error deleting department:", err);
+            });
     }
 
     return (
@@ -81,13 +93,7 @@ export default function ManageDepartments() {
                 >
                     <form onSubmit={handleDepartmentAddition} className="space-y-4">
                         <input
-                            name="id"
-                            placeholder="Id"
-                            required
-                            className="w-full border px-3 py-2 rounded"
-                        />
-                        <input
-                            name="departmentName"
+                            name="name"
                             placeholder="Department name"
                             required
                             className="w-full border px-3 py-2 rounded"
@@ -123,13 +129,13 @@ export default function ManageDepartments() {
                             name="departmentName"
                             required
                             className="w-full border px-3 py-2 rounded"
-                            defaultValue={editDepartmentId == null ? "" : departments.find(d => d.id == editDepartmentId).departmentName}
+                            defaultValue={editDepartmentId == null ? "" : departments.find(d => d.departmentId == editDepartmentId).name}
                         />
                         <input
                             name="description"
                             required
                             className="w-full border px-3 py-2 rounded"
-                            defaultValue={editDepartmentId == null ? "" : departments.find(d => d.id == editDepartmentId).description}
+                            defaultValue={editDepartmentId == null ? "" : departments.find(d => d.departmentId == editDepartmentId).description}
                         />
                         <div className="text-right">
                             <button
@@ -161,23 +167,23 @@ export default function ManageDepartments() {
                     <tbody>
                         {
                             matchedDepartments.map((d) =>
-                                <tr key={d.id}>
-                                    <td className="border p-2">{d.id}</td>
-                                    <td className="border p-2">{d.departmentName}</td>
+                                <tr key={d.departmentId}>
+                                    <td className="border p-2">{d.departmentId}</td>
+                                    <td className="border p-2">{d.name}</td>
                                     <td className="border p-2">{d.description}</td>
                                     <td className="border p-2 text-center">
                                         <button
                                             style={{ color: "#718769" }}
                                             className="mr-2 hover:underline"
                                             onClick={handleEditClick}
-                                            data-id={d.id}
+                                            data-id={d.departmentId}
                                         >
                                             Edit
                                         </button>
                                         <button
                                             className="text-red-600 hover:underline"
                                             onClick={handleDelete}
-                                            data-id={d.id}
+                                            data-id={d.departmentId}
                                         >
                                             Delete
                                         </button>
