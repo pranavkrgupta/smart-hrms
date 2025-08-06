@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DepartmentDTO {
-	
+public class DepartmentResDto {
+	private long departmentId;
 	
 	@NotBlank(message = "Department name is mandatory")
 	@Size(max = 100, message = "Department name must be at most 100 characters")

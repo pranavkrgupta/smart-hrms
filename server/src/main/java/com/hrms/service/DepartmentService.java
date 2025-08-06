@@ -1,15 +1,17 @@
 package com.hrms.service;
 
 import java.util.List;
-import com.hrms.dto.DepartmentDTO;
+import com.hrms.dto.DepartmentReqDto;
+import com.hrms.dto.DepartmentResDto;
+
 import jakarta.validation.Valid;
 
 public interface DepartmentService {
-	List<DepartmentDTO> getAllDepartments();
+	List<DepartmentResDto> getAllDepartments();
 
-	DepartmentDTO createDepartment( DepartmentDTO dto);
+	DepartmentResDto createDepartment( DepartmentReqDto dto);
 
-	DepartmentDTO updateDepartment(Long id,  DepartmentDTO dto);
+	DepartmentResDto updateDepartment(Long id,  DepartmentReqDto dto);
 
 	void deleteDepartment(Long id);
 	
