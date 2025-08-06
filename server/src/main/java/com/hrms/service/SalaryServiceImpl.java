@@ -4,7 +4,7 @@ import java.util.List;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import com.hrms.dao.SalaryDao;
-import com.hrms.dao.UserDaoTest;
+import com.hrms.dao.UserDao;
 import com.hrms.dto.SalaryDTO;
 import com.hrms.dto.SalaryRespDTO;
 import com.hrms.entities.Salaries;
@@ -19,7 +19,7 @@ public class SalaryServiceImpl implements SalaryService{
 
 	// Dependency
 	private final SalaryDao salaryDao;
-	private final UserDaoTest userDaoTest;
+	private final UserDao userDao;
 	private final ModelMapper modelMapper;
 	
 	@Override
@@ -51,7 +51,7 @@ public class SalaryServiceImpl implements SalaryService{
 	public String addNewSalary(Long UserId, SalaryDTO dto) {
 		
 		// It is used to fetch the user entity from the db based on user id present in salary dto
-		User user = userDaoTest.findById(UserId)
+		User user = userDao.findById(UserId)
 				.orElseThrow(()-> new RuntimeException("User not found"));
 
 		Salaries salary = modelMapper.map(dto,Salaries.class);
