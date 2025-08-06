@@ -17,7 +17,6 @@ import lombok.ToString;
 
 @Entity
 @Table(name="departments")
-@ToString
 @Data
 public class Department extends BaseEntity {
 	@Id
@@ -27,12 +26,11 @@ public class Department extends BaseEntity {
 	@Column(name = "name", nullable = false, unique = true)
 	private String name;
 
-	@Size(max = 500, message = "Description must be at most 500 characters")
+	
 	@Column(name = "description", columnDefinition = "TEXT")
 	private String description;
 
 	@OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
-	@ToString.Exclude
 	private List<Designation> designations = new ArrayList<>();
 
 }
