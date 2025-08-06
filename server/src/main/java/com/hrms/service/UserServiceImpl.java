@@ -88,5 +88,12 @@ public class UserServiceImpl implements UserService {
 		return new ApiResponse("User with id - " + user_id + " updated");
 	}
 
+	@Override
+	public ApiResponse deleteUser(Long user_id) {
+		User user = userDao.getReferenceById(user_id);
+		userDao.delete(user);
+		return new ApiResponse("User Deleted Succesfully");
+	}
+
 
 }

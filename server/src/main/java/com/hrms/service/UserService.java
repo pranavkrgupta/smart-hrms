@@ -18,6 +18,8 @@ public interface UserService {
 	UserRespDto getUserById(Long user_id);
 
 	ApiResponse updateUser(Long user_id, @Valid UserReqDto userRequest);
+
+	ApiResponse deleteUser(Long id);
 	
 	
 }
