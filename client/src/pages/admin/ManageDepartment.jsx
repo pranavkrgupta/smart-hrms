@@ -1,25 +1,17 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Modal from "../../components/Modal";
-
+import { getEmployees } from "../../services/departmentService";
 
 export default function ManageDepartments() {
-    const [departments, setDepartments] = useState([
-        {
-            id: 1,
-            departmentName: "Human Resources",
-            description: "Handles HR tasks."
-        },
-        {
-            id: 2,
-            departmentName: "IT",
-            description: "Tech Support and Development."
-        },
-        {
-            id: 3,
-            departmentName: "Sales",
-            description: "Client management."
-        }
-    ])
+    const [departments, setDepartments] = useState([]);
+    
+    useEffect(() => {
+        getEmployees().then(res => {
+            setDepartments(res.data);
+        }).catch(err => {
+            console.error("Error fetching departments:", err);
+        });
+    }, []);
 
     const [isAddModalVisible, setIsAddModalVisible] = useState(false);
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
@@ -161,9 +153,9 @@ export default function ManageDepartments() {
                     <tbody>
                         {
                             matchedDepartments.map((d) =>
-                                <tr key={d.id}>
-                                    <td className="border p-2">{d.id}</td>
-                                    <td className="border p-2">{d.departmentName}</td>
+                                <tr key={d.departmentId}>
+                                    <td className="border p-2">{d.departmentId}</td>
+                                    <td className="border p-2">{d.name}</td>
                                     <td className="border p-2">{d.description}</td>
                                     <td className="border p-2 text-center">
                                         <button
