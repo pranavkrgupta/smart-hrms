@@ -1,31 +1,25 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Modal from "../../components/Modal";
+import axios from "axios";
 
 export default function ManageDesignation() {
-    const [designations, setDesignations] = useState([
-        {
-            id: 1,
-            designationName: "Software developer 1",
-            description: "Handles software requirements"
-        },
-        {
-            id: 2,
-            designationName: "HR manager",
-            description: "HR head."
-        },
-        {
-            id: 3,
-            designationName: "Sales executive",
-            description: "Sales representative."
-        }
-    ])
-
+    const [designations, setDesignations] = useState([])
     const [isAddModalVisible, setIsAddModalVisible] = useState(false);
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [searchKeyword, setSearchKeyword] = useState("");
     const [editDesignationId, setEditDesignationId] = useState(null);
 
-    const matchedDesignations = searchKeyword == "" ? designations : designations.filter(d => d.designationName.toLowerCase().includes(searchKeyword.toLowerCase()));
+    useEffect(() => {
+        axios.get("http://localhost:8080/api/designations")
+            .then(res => {
+                setDesignations(res.data);
+            })
+            .catch(err => {
+                console.error("Error fetching designations:", err);
+            });
+    }, []);
+
+    const matchedDesignations = searchKeyword == "" ? designations : designations.filter(d => d.name.toLowerCase().includes(searchKeyword.toLowerCase()));
 
     function handleAddClick(e) {
         setIsAddModalVisible(true);
@@ -34,8 +28,8 @@ export default function ManageDesignation() {
     function handleDesignationAddition(e) {
         e.preventDefault();
         const temp = {
-            id: e.target.id.value,
-            designationName: e.target.designationName.value,
+            designationId: e.target.designationId.value,
+            name: e.target.name.value,
             description: e.target.description.value,
         }
         setDesignations((d) => [...designations, temp]);
@@ -45,11 +39,11 @@ export default function ManageDesignation() {
     function handleDesignationtEdit(e) {
         e.preventDefault()
         const temp = {
-            id: editDesignationId,
-            designationName: e.target.designationName.value,
+            designationId: editDesignationId,
+            name: e.target.name.value,
             description: e.target.description.value,
         }
-        setDesignations(d => [...d.filter(des => des.id != temp.id), temp])
+        setDesignations(d => [...d.filter(des => des.designationId != temp.designationId), temp])
         setEditDesignationId(null);
         setIsEditModalVisible(false)
     }
@@ -65,7 +59,7 @@ export default function ManageDesignation() {
 
     function handleDelete(e) {
         const desId = e.target.getAttribute("data-id");
-        setDesignations(d => d.filter(des => des.id != desId))
+        setDesignations(d => d.filter(des => des.designationId != desId))
     }
 
     return (
@@ -80,13 +74,13 @@ export default function ManageDesignation() {
                 >
                     <form onSubmit={handleDesignationAddition} className="space-y-4">
                         <input
-                            name="id"
+                            name="designationId"
                             placeholder="Id"
                             required
                             className="w-full border px-3 py-2 rounded"
                         />
                         <input
-                            name="designationName"
+                            name="name"
                             placeholder="Designation name"
                             required
                             className="w-full border px-3 py-2 rounded"
@@ -119,16 +113,16 @@ export default function ManageDesignation() {
                 >
                     <form onSubmit={handleDesignationtEdit} className="space-y-4">
                         <input
-                            name="designationName"
+                            name="name"
                             required
                             className="w-full border px-3 py-2 rounded"
-                            defaultValue={editDesignationId == null ? "" : designations.find(d => d.id == editDesignationId).designationName}
+                            defaultValue={editDesignationId == null ? "" : designations.find(d => d.designationId == editDesignationId).name}
                         />
                         <input
                             name="description"
                             required
                             className="w-full border px-3 py-2 rounded"
-                            defaultValue={editDesignationId == null ? "" : designations.find(d => d.id == editDesignationId).description}
+                            defaultValue={editDesignationId == null ? "" : designations.find(d => d.designationId == editDesignationId).description}
                         />
                         <div className="text-right">
                             <button
@@ -160,23 +154,23 @@ export default function ManageDesignation() {
                     <tbody>
                         {
                             matchedDesignations.map((d) =>
-                                <tr key={d.id}>
-                                    <td className="border p-2">{d.id}</td>
-                                    <td className="border p-2">{d.designationName}</td>
+                                <tr key={d.designationId}>
+                                    <td className="border p-2">{d.designationId}</td>
+                                    <td className="border p-2">{d.name}</td>
                                     <td className="border p-2">{d.description}</td>
                                     <td className="border p-2 text-center">
                                         <button
                                             style={{ color: "#718769" }}
                                             className="mr-2 hover:underline"
                                             onClick={handleEditClick}
-                                            data-id={d.id}
+                                            data-id={d.designationId}
                                         >
                                             Edit
                                         </button>
                                         <button
                                             className="text-red-600 hover:underline"
                                             onClick={handleDelete}
-                                            data-id={d.id}
+                                            data-id={d.designationId}
                                         >
                                             Delete
                                         </button>
