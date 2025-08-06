@@ -11,7 +11,7 @@ export default function ManageDepartments() {
     const [editDepartmentId, setEditDepartmentId] = useState(null);
     const [refreshFlag, setRefreshFlag] = useState(false);
 
-    const matchedDepartments = searchKeyword == "" ? departments : departments.filter(d => d.departmentName.toLowerCase().includes(searchKeyword.toLowerCase()));
+    const matchedDepartments = searchKeyword == "" ? departments : departments.filter(d => d.name.toLowerCase().includes(searchKeyword.toLowerCase()));
 
 
     useEffect(() => {
@@ -47,11 +47,17 @@ export default function ManageDepartments() {
     function handleDepartmentEdit(e) {
         e.preventDefault()
         const temp = {
-            id: editDepartmentId,
-            departmentName: e.target.departmentName.value,
+            name: e.target.departmentName.value,
             description: e.target.description.value,
         }
-        setDepartments(d => [...d.filter(dep => dep.id != temp.id), temp])
+
+        axios.put(`http://localhost:8080/api/departments/${editDepartmentId}`, temp)
+            .then(res => {
+                console.log("Department updated successfully:", res.data);
+                setRefreshFlag(!refreshFlag);
+            }).catch(err => {
+                console.error("Error updating department:", err);
+            });
         setEditDepartmentId(null);
         setIsEditModalVisible(false)
     }
@@ -118,13 +124,13 @@ export default function ManageDepartments() {
                             name="departmentName"
                             required
                             className="w-full border px-3 py-2 rounded"
-                            defaultValue={editDepartmentId == null ? "" : departments.find(d => d.id == editDepartmentId).departmentName}
+                            defaultValue={editDepartmentId == null ? "" : departments.find(d => d.departmentId == editDepartmentId).name}
                         />
                         <input
                             name="description"
                             required
                             className="w-full border px-3 py-2 rounded"
-                            defaultValue={editDepartmentId == null ? "" : departments.find(d => d.id == editDepartmentId).description}
+                            defaultValue={editDepartmentId == null ? "" : departments.find(d => d.departmentId == editDepartmentId).description}
                         />
                         <div className="text-right">
                             <button
@@ -165,14 +171,14 @@ export default function ManageDepartments() {
                                             style={{ color: "#718769" }}
                                             className="mr-2 hover:underline"
                                             onClick={handleEditClick}
-                                            data-id={d.id}
+                                            data-id={d.departmentId}
                                         >
                                             Edit
                                         </button>
                                         <button
                                             className="text-red-600 hover:underline"
                                             onClick={handleDelete}
-                                            data-id={d.id}
+                                            data-id={d.departmentId}
                                         >
                                             Delete
                                         </button>
