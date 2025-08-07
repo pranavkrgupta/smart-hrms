@@ -10,13 +10,8 @@ export default function ManageDesignation() {
     const [editDesignationId, setEditDesignationId] = useState(null);
     const [editDepartmentId, setEditDepartmentId] = useState(null);
     const [refreshFlag, setRefreshFlag] = useState(false);
-
-    // finds unique departments from designations
-    const departments = designations.filter((d, ind, self) => {
-        return ind === self.findIndex((t) => (
-            t.departmentId === d.departmentId && t.departmentName === d.departmentName
-        ));
-    })
+    const [departments, setDepartments] = useState([]);
+    const [addDepartmentId, setAddDepartmentId] = useState(null);
 
     useEffect(() => {
         axios.get("http://localhost:8080/api/designations")
@@ -26,6 +21,12 @@ export default function ManageDesignation() {
             .catch(err => {
                 console.error("Error fetching designations:", err);
             });
+
+        axios.get("http://localhost:8080/api/departments").then(res => {
+            setDepartments(res.data)
+        }).catch(err => {
+            console.log("Error fetching departments.", err);
+        })
     }, [refreshFlag]);
 
     const matchedDesignations = searchKeyword == "" ? designations : designations.filter(d => d.name.toLowerCase().includes(searchKeyword.toLowerCase()));
@@ -37,12 +38,18 @@ export default function ManageDesignation() {
     function handleDesignationAddition(e) {
         e.preventDefault();
         const temp = {
-            designationId: e.target.designationId.value,
             name: e.target.name.value,
             description: e.target.description.value,
+            departmentId: addDepartmentId
         }
-        setDesignations((d) => [...designations, temp]);
+        axios.post("http://localhost:8080/api/designations", temp).then(res => {
+            console.log(res.data);
+            setRefreshFlag(!refreshFlag);
+        }).catch(e => {
+            console.log(e);
+        })
         setIsAddModalVisible(false);
+        setAddDepartmentId(null);
     }
 
     function handleDesignationtEdit(e) {
@@ -100,6 +107,13 @@ export default function ManageDesignation() {
                             required
                             className="w-full border px-3 py-2 rounded"
                         />
+                         <select className="w-full border px-3 py-2 rounded" onChange={(e) => {
+                            setAddDepartmentId(e.target.value)
+                        }} defaultValue={"default"}>
+                            <option value="default" disabled>Select Department</option>
+                            {
+                                departments.map((d) => (<option key={d.departmentId} value={d.departmentId}>{d.name}</option>))}
+                        </select>
                         <div className="text-right">
                             <button
                                 type="submit"
@@ -133,12 +147,12 @@ export default function ManageDesignation() {
                             className="w-full border px-3 py-2 rounded"
                             defaultValue={editDesignationId == null ? "" : designations.find(d => d.designationId == editDesignationId).description}
                         />
-                        <select className="w-full border px-3 py-2 rounded"  onChange={(e) => {
+                        <select className="w-full border px-3 py-2 rounded" onChange={(e) => {
                             setEditDepartmentId(e.target.value)
                         }} defaultValue={"default"}>
                             <option value="default" disabled>Select Department</option>
                             {
-                                departments.map((d) => (<option key={d.departmentId} value={d.departmentId}>{d.departmentName}</option>))}
+                                departments.map((d) => (<option key={d.departmentId} value={d.departmentId}>{d.name}</option>))}
                         </select>
                         <div className="text-right">
                             <button
