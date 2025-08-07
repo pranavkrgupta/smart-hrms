@@ -77,6 +77,7 @@ export default function ManageDepartments() {
                 console.log("Department deleted successfully:", res.data);
                 setRefreshFlag(!refreshFlag);
             }).catch(err => {
+                window.alert("cannot delete the department because some designations are still referencing the department.")
                 console.error("Error deleting department:", err);
             });
     }

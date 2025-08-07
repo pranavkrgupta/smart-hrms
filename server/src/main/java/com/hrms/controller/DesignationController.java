@@ -40,7 +40,7 @@ public class DesignationController {
 		return ResponseEntity.status(HttpStatus.OK).body(service.updateDesignation(id, dto));
 	}
 	
-	@DeleteMapping
+	@DeleteMapping("/{id}")
 	public ResponseEntity<?> deleteDesignation(@PathVariable long id){
 		service.deleteDesignation(id);
 		return ResponseEntity.status(HttpStatus.ACCEPTED).build();

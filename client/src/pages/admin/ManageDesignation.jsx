@@ -81,7 +81,13 @@ export default function ManageDesignation() {
 
     function handleDelete(e) {
         const desId = e.target.getAttribute("data-id");
-        setDesignations(d => d.filter(des => des.designationId != desId))
+        axios.delete(`http://localhost:8080/api/designations/${desId}`).then(res => {
+            console.log(res.data);
+            setRefreshFlag(!refreshFlag);
+        }).catch(e => {
+            window.alert("cannot delete the designation because some users are still referencing the designation.");
+            console.log(e);
+        })
     }
 
     return (
