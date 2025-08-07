@@ -25,7 +25,15 @@ public class DesignationServiceImpl implements DesignationService {
 
 	@Override
 	public List<DesignationResDto> getAllDesignations() {
-		return desDao.findAll().stream().map(des -> modelMapper.map(des, DesignationResDto.class)).toList();
+		return desDao.findAll().stream().map(des -> {
+			DesignationResDto dto = new DesignationResDto();
+			dto.setDesignationId(des.getDesignationId());
+			dto.setName(des.getName());
+			dto.setDescription(des.getDescription());
+			dto.setDepartmentId(des.getDepartment().getDepartmentId());
+			dto.setDepartmentName(des.getDepartment().getName());
+			return dto;
+		}).toList();
 	}
 
 	@Override
@@ -66,12 +74,10 @@ public class DesignationServiceImpl implements DesignationService {
 	public void deleteDesignation(long id) {
 		// TODO Auto-generated method stub
 		Boolean exists = desDao.existsById(id);
-		if(!exists) {
+		if (!exists) {
 			throw new IllegalArgumentException("Department does not exist.");
 		}
 		desDao.deleteById(id);
 	}
-
-	
 
 }

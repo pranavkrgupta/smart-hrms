@@ -17,4 +17,6 @@ public class DesignationResDto {
 	
 	@NotNull(message = "Department ID is required")
 	private Long departmentId;
+	
+	private String departmentName;
 }

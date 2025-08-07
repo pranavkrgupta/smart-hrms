@@ -1,31 +1,35 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Modal from "../../components/Modal";
+import axios from "axios";
 
 export default function ManageDesignation() {
-    const [designations, setDesignations] = useState([
-        {
-            id: 1,
-            designationName: "Software developer 1",
-            description: "Handles software requirements"
-        },
-        {
-            id: 2,
-            designationName: "HR manager",
-            description: "HR head."
-        },
-        {
-            id: 3,
-            designationName: "Sales executive",
-            description: "Sales representative."
-        }
-    ])
-
+    const [designations, setDesignations] = useState([])
     const [isAddModalVisible, setIsAddModalVisible] = useState(false);
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [searchKeyword, setSearchKeyword] = useState("");
     const [editDesignationId, setEditDesignationId] = useState(null);
+    const [editDepartmentId, setEditDepartmentId] = useState(null);
+    const [refreshFlag, setRefreshFlag] = useState(false);
+    const [departments, setDepartments] = useState([]);
+    const [addDepartmentId, setAddDepartmentId] = useState(null);
 
-    const matchedDesignations = searchKeyword == "" ? designations : designations.filter(d => d.designationName.toLowerCase().includes(searchKeyword.toLowerCase()));
+    useEffect(() => {
+        axios.get("http://localhost:8080/api/designations")
+            .then(res => {
+                setDesignations(res.data);
+            })
+            .catch(err => {
+                console.error("Error fetching designations:", err);
+            });
+
+        axios.get("http://localhost:8080/api/departments").then(res => {
+            setDepartments(res.data)
+        }).catch(err => {
+            console.log("Error fetching departments.", err);
+        })
+    }, [refreshFlag]);
+
+    const matchedDesignations = searchKeyword == "" ? designations : designations.filter(d => d.name.toLowerCase().includes(searchKeyword.toLowerCase()));
 
     function handleAddClick(e) {
         setIsAddModalVisible(true);
@@ -34,23 +38,37 @@ export default function ManageDesignation() {
     function handleDesignationAddition(e) {
         e.preventDefault();
         const temp = {
-            id: e.target.id.value,
-            designationName: e.target.designationName.value,
+            name: e.target.name.value,
             description: e.target.description.value,
+            departmentId: addDepartmentId
         }
-        setDesignations((d) => [...designations, temp]);
+        axios.post("http://localhost:8080/api/designations", temp).then(res => {
+            console.log(res.data);
+            setRefreshFlag(!refreshFlag);
+        }).catch(e => {
+            console.log(e);
+        })
         setIsAddModalVisible(false);
+        setAddDepartmentId(null);
     }
 
     function handleDesignationtEdit(e) {
         e.preventDefault()
         const temp = {
-            id: editDesignationId,
-            designationName: e.target.designationName.value,
+            name: e.target.name.value,
             description: e.target.description.value,
+            departmentId: editDepartmentId,
         }
-        setDesignations(d => [...d.filter(des => des.id != temp.id), temp])
+        console.log(temp);
+        
+        axios.put(`http://localhost:8080/api/designations/${editDesignationId}`, temp).then(res => {
+            console.log("Designation updated successfully:", res.data);
+            setRefreshFlag(!refreshFlag);
+        }).catch(err => {
+            console.error("Error updating designation:", err);
+        });
         setEditDesignationId(null);
+        setEditDepartmentId(null);
         setIsEditModalVisible(false)
     }
 
@@ -65,7 +83,13 @@ export default function ManageDesignation() {
 
     function handleDelete(e) {
         const desId = e.target.getAttribute("data-id");
-        setDesignations(d => d.filter(des => des.id != desId))
+        axios.delete(`http://localhost:8080/api/designations/${desId}`).then(res => {
+            console.log(res.data);
+            setRefreshFlag(!refreshFlag);
+        }).catch(e => {
+            window.alert("cannot delete the designation because some users are still referencing the designation.");
+            console.log(e);
+        })
     }
 
     return (
@@ -80,13 +104,7 @@ export default function ManageDesignation() {
                 >
                     <form onSubmit={handleDesignationAddition} className="space-y-4">
                         <input
-                            name="id"
-                            placeholder="Id"
-                            required
-                            className="w-full border px-3 py-2 rounded"
-                        />
-                        <input
-                            name="designationName"
+                            name="name"
                             placeholder="Designation name"
                             required
                             className="w-full border px-3 py-2 rounded"
@@ -97,6 +115,13 @@ export default function ManageDesignation() {
                             required
                             className="w-full border px-3 py-2 rounded"
                         />
+                         <select className="w-full border px-3 py-2 rounded" onChange={(e) => {
+                            setAddDepartmentId(e.target.value)
+                        }} defaultValue={"default"}>
+                            <option value="default" disabled>Select Department</option>
+                            {
+                                departments.map((d) => (<option key={d.departmentId} value={d.departmentId}>{d.name}</option>))}
+                        </select>
                         <div className="text-right">
                             <button
                                 type="submit"
@@ -119,17 +144,23 @@ export default function ManageDesignation() {
                 >
                     <form onSubmit={handleDesignationtEdit} className="space-y-4">
                         <input
-                            name="designationName"
+                            name="name"
                             required
                             className="w-full border px-3 py-2 rounded"
-                            defaultValue={editDesignationId == null ? "" : designations.find(d => d.id == editDesignationId).designationName}
+                            defaultValue={editDesignationId == null ? "" : designations.find(d => d.designationId == editDesignationId).name}
                         />
                         <input
                             name="description"
                             required
                             className="w-full border px-3 py-2 rounded"
-                            defaultValue={editDesignationId == null ? "" : designations.find(d => d.id == editDesignationId).description}
+                            defaultValue={editDesignationId == null ? "" : designations.find(d => d.designationId == editDesignationId).description}
                         />
+                        <select className="w-full border px-3 py-2 rounded" onChange={(e) => {
+                            setEditDepartmentId(e.target.value )
+                        }} defaultValue={"default"}>
+                            {
+                                departments.map((d) => (<option key={d.departmentId} value={d.departmentId}>{d.name}</option>))}
+                        </select>
                         <div className="text-right">
                             <button
                                 type="submit"
@@ -154,29 +185,31 @@ export default function ManageDesignation() {
                             <th className="border p-2">ID</th>
                             <th className="border p-2">Designation Name</th>
                             <th className="border p-2">Description</th>
+                            <th className="border p-2">Department Name</th>
                             <th className="border p-2">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {
                             matchedDesignations.map((d) =>
-                                <tr key={d.id}>
-                                    <td className="border p-2">{d.id}</td>
-                                    <td className="border p-2">{d.designationName}</td>
+                                <tr key={d.designationId}>
+                                    <td className="border p-2">{d.designationId}</td>
+                                    <td className="border p-2">{d.name}</td>
                                     <td className="border p-2">{d.description}</td>
+                                    <td className="border p-2">{d.departmentName}</td>
                                     <td className="border p-2 text-center">
                                         <button
                                             style={{ color: "#718769" }}
                                             className="mr-2 hover:underline"
                                             onClick={handleEditClick}
-                                            data-id={d.id}
+                                            data-id={d.designationId}
                                         >
                                             Edit
                                         </button>
                                         <button
                                             className="text-red-600 hover:underline"
                                             onClick={handleDelete}
-                                            data-id={d.id}
+                                            data-id={d.designationId}
                                         >
                                             Delete
                                         </button>
