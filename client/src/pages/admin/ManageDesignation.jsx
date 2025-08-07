@@ -59,6 +59,8 @@ export default function ManageDesignation() {
             description: e.target.description.value,
             departmentId: editDepartmentId,
         }
+        console.log(temp);
+        
         axios.put(`http://localhost:8080/api/designations/${editDesignationId}`, temp).then(res => {
             console.log("Designation updated successfully:", res.data);
             setRefreshFlag(!refreshFlag);
@@ -154,9 +156,8 @@ export default function ManageDesignation() {
                             defaultValue={editDesignationId == null ? "" : designations.find(d => d.designationId == editDesignationId).description}
                         />
                         <select className="w-full border px-3 py-2 rounded" onChange={(e) => {
-                            setEditDepartmentId(e.target.value)
+                            setEditDepartmentId(e.target.value )
                         }} defaultValue={"default"}>
-                            <option value="default" disabled>Select Department</option>
                             {
                                 departments.map((d) => (<option key={d.departmentId} value={d.departmentId}>{d.name}</option>))}
                         </select>
