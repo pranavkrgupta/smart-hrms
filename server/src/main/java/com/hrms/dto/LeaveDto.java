@@ -2,7 +2,7 @@ package com.hrms.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.*;
-import java.time.*;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -10,30 +10,28 @@ import java.time.*;
 @AllArgsConstructor
 public class LeaveDto {
 
-//    @NotNull(message = "User ID is required")
-//    private Long userId;
-
-    @NotNull(message = "From date is required")
+    @NotNull(message = "From date is mandatory")
     private LocalDate fromDate;
 
-    @NotNull(message = "To date is required")
+    @NotNull(message = "To date is mandatory")
     private LocalDate toDate;
 
-    @NotBlank(message = "Reason is required")
+    @NotBlank(message = "Reason cannot be blank")
     private String reason;
 
-    @NotNull(message = "Leave status is required")
-    private String status;
+    @NotNull(message = "Status is mandatory")
+    private String status;  // Use string for enum value e.g. "Pending"
 
-    @NotNull(message = "Leave type is required")
-    private String type;
+    @NotNull(message = "Type is mandatory")
+    private String type;    // Use string for enum value e.g. "Sick"
 
     private String comment;
 
+    // Custom validation to ensure fromDate <= toDate
     @AssertTrue(message = "From date must be before or equal to To date")
     public boolean isFromDateBeforeOrEqualToToDate() {
         if (fromDate == null || toDate == null) {
-            return true;
+            return true; // Other annotations will catch nulls
         }
         return !fromDate.isAfter(toDate);
     }

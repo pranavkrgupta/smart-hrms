@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 // Replace with dynamic logged-in user id in real app
-const CURRENT_USER_ID = 15;
+const CURRENT_USER_ID = 3;
 
 const statusLabels = {
     PENDING: "Pending",

@@ -1,19 +1,20 @@
 package com.hrms.service;
 
-import java.util.List;
-
-import org.modelmapper.ModelMapper;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.hrms.dao.LeaveDao;
 import com.hrms.dao.UserDao;
 import com.hrms.dto.LeaveDto;
 import com.hrms.dto.LeaveResDto;
 import com.hrms.entities.Leaves;
 import com.hrms.entities.User;
-
+import com.hrms.entities.LeaveStatus;
+import com.hrms.entities.LeaveType;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -25,73 +26,60 @@ public class LeaveServiceImpl implements LeaveService {
     private final ModelMapper modelMapper;
 
     @Override
-    public String createLeave(Long userid, LeaveDto dto) {
-//        User user = userDao.findById(userid)
-//                .orElseThrow(() -> new RuntimeException("User not found"));
-        User user = userDao.getReferenceById(userid);
-        Leaves entity = modelMapper.map(dto, Leaves.class);
+    public List<LeaveResDto> getLeavesByUser(Long userId) {
+        List<Leaves> leaves = leaveDao.findByUser_UserId(userId);
+        return leaves.stream()
+                .map(this::convertToResDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void createLeave(Long userId, LeaveDto leaveDto) {
+        User user = userDao.getReferenceById(userId);
+
+        Leaves entity = new Leaves();
         entity.setUser(user);
-        leaveDao.save(entity);
-
-        return "Leave created successfully";
-    }
-
-    @Override
-    public String updateLeave(Long id, LeaveDto dto) {
-        Leaves entity = leaveDao.findById(id)
-                .orElseThrow(() -> new RuntimeException("Leave not found"));
-
-        modelMapper.map(dto, entity);
-
-//        User user = userDao.findById(dto.getUserId())
-//                .orElseThrow(() -> new RuntimeException("User not found"));
-//        entity.setUser(user);
+        entity.setFromDate(leaveDto.getFromDate());
+        entity.setToDate(leaveDto.getToDate());
+        entity.setReason(leaveDto.getReason());
+        entity.setComment(leaveDto.getComment());
+        entity.setStatus(LeaveStatus.valueOf(leaveDto.getStatus().toUpperCase()));
+        entity.setType(LeaveType.valueOf(leaveDto.getType().toUpperCase()));
 
         leaveDao.save(entity);
-
-        return "Leave updated successfully";
     }
 
     @Override
-    public String deleteLeave(Long leaveId) {
-//        Leaves entity = leaveDao.findById(leaveId)
-//                .orElseThrow(() -> new RuntimeException("Leave not found"));
-        Leaves entity= leaveDao.getReferenceById(leaveId);
-        leaveDao.delete(entity);
-        return "Leave deleted successfully";
+    public void updateLeave(Long leaveId, LeaveDto leaveDto) {
+        Leaves entity = leaveDao.findById(leaveId)
+                .orElseThrow(() -> new RuntimeException("Leave not found with ID: " + leaveId));
+
+        entity.setFromDate(leaveDto.getFromDate());
+        entity.setToDate(leaveDto.getToDate());
+        entity.setReason(leaveDto.getReason());
+        entity.setComment(leaveDto.getComment());
+        entity.setStatus(LeaveStatus.valueOf(leaveDto.getStatus().toUpperCase()));
+        entity.setType(LeaveType.valueOf(leaveDto.getType().toUpperCase()));
+
+        leaveDao.save(entity);
     }
 
     @Override
-    public LeaveDto getLeaveById(Long id) {
-        Leaves entity = leaveDao.findById(id)
-                .orElseThrow(() -> new RuntimeException("Leave not found"));
+    public void deleteLeave(Long leaveId) {
+        leaveDao.deleteById(leaveId);
+    }
 
-        LeaveDto dto = modelMapper.map(entity, LeaveDto.class);
-//        dto.setUserId(entity.getUser().getUserId());
+    // Helper method to convert Leaves entity to LeaveResDto
+    private LeaveResDto convertToResDto(Leaves entity) {
+        LeaveResDto dto = new LeaveResDto();
+        dto.setId(entity.getId());
+        dto.setUserId(entity.getUser().getUserId());
+        dto.setFromDate(entity.getFromDate());
+        dto.setToDate(entity.getToDate());
+        dto.setReason(entity.getReason());
+        dto.setComment(entity.getComment());
+        dto.setStatus(entity.getStatus().name()); // Enum to String (e.g. "Pending")
+        dto.setType(entity.getType().name());     // Enum to String (e.g. "Sick")
         return dto;
-    }
-
-    @Override
-    public List<LeaveResDto> getAllLeaves() {
-        return leaveDao.findAll()
-                .stream()
-                .map(entity -> {
-                    LeaveResDto dto = modelMapper.map(entity, LeaveResDto.class);
-                    dto.setUserId(entity.getUser().getUserId());
-                    return dto;
-                })
-                .toList();
-    }
-
-    @Override
-    public List<LeaveDto> getLeavesByUserId(Long userId) {
-        return leaveDao.findByUser_UserId(userId)
-                .stream()
-                .map(entity -> {
-                    LeaveDto dto = modelMapper.map(entity, LeaveDto.class);
-//                    dto.setUserId(entity.getUser().getUserId());
-                    return dto;
-                })
-                .toList();
     }
 }
