@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.hrms.dto.UserReqDto;
 import com.hrms.dto.UserRespDto;
-import com.hrms.entities.User;
+import com.hrms.entities.UserEntity;
 import com.hrms.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;

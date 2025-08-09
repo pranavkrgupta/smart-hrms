@@ -5,7 +5,7 @@ import com.hrms.dao.UserDao;
 import com.hrms.dto.AttendanceDto;
 import com.hrms.dto.AttendanceResDto;
 import com.hrms.entities.Attendance;
-import com.hrms.entities.User;
+import com.hrms.entities.UserEntity;
 import com.hrms.entities.AttendanceStatus;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -39,7 +39,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     @Override
     public void createAttendance(Long userId, AttendanceDto dto) {
-        User user = userDao.getReferenceById(userId);
+        UserEntity user = userDao.getReferenceById(userId);
 
         // Check date uniqueness (optional)
         if (attendanceDao.existsByUser_UserIdAndDate(userId, dto.getDate())) {
