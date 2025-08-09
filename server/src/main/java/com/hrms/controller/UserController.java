@@ -33,7 +33,6 @@ public class UserController {
 	@Autowired
 	private UserService userService;
 
-//	@CrossOrigin(origins = "http://localhost:5173")
 	@GetMapping
 	@Operation(description = "Get All Users")
 	public ResponseEntity<List<UserRespDto>> getAllUsers() {

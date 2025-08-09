@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +26,8 @@ import jakarta.validation.Valid;
 @Transactional
 public class UserServiceImpl implements UserService {
 
+    private final PasswordEncoder passwordEncoder;
+
 	@Autowired
 	private final ModelMapper modelMapper;
 
@@ -34,8 +37,9 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private DesignationDao designationDao;
 
-	UserServiceImpl(ModelMapper modelMapper) {
+	UserServiceImpl(ModelMapper modelMapper, PasswordEncoder passwordEncoder) {
 		this.modelMapper = modelMapper;
+		this.passwordEncoder = passwordEncoder;
 	}
 
 	@Override
@@ -57,7 +61,7 @@ public class UserServiceImpl implements UserService {
 				.orElseThrow(() -> new ResourceNotFoundException("Designation Id is Incorrect"));
 
 		userEntity.setDesignation(designation);
-		userEntity.setPassword(userReqDto.getEmail());
+		userEntity.setPassword(passwordEncoder.encode(userReqDto.getEmail()));
 		userDao.save(userEntity);
 
 		UserRespDto dto = modelMapper.map(userEntity, UserRespDto.class);

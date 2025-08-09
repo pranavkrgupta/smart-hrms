@@ -12,15 +12,21 @@ import com.hrms.entities.UserEntity;
 public class CustomUserDetails implements UserDetails {
 
 	private final UserEntity user;
+	private final String email;
+	private final String userId;
+	private final Collection<? extends GrantedAuthority> authorities;
 
 	public CustomUserDetails(UserEntity user) {
 		this.user = user; // store userEntity to fetch info later
+		this.userId = String.valueOf(user.getUserId());
+		this.email = user.getEmail();
+		this.authorities = Collections.singletonList(new SimpleGrantedAuthority(user.getUserRole().name()));
 	}
 
 	// Returns the roles as authorities that spring security understands
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return Collections.singletonList(new SimpleGrantedAuthority(user.getUserRole().name()));
+		return authorities;
 	}
 
 	// Return password (hashed)
@@ -33,6 +39,10 @@ public class CustomUserDetails implements UserDetails {
 	@Override
 	public String getUsername() {
 		return user.getEmail();
+	}
+
+	public String getUserId() {
+		return userId;
 	}
 
 }
