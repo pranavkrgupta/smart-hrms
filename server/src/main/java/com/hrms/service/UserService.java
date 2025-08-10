@@ -3,6 +3,7 @@ package com.hrms.service;
 import java.util.List;
 
 import com.hrms.dto.ApiResponse;
+import com.hrms.dto.ChangePasswordDto;
 import com.hrms.dto.UserReqDto;
 import com.hrms.dto.UserRespDto;
 
@@ -20,6 +21,8 @@ public interface UserService {
 	ApiResponse updateUser(Long user_id, @Valid UserReqDto userRequest);
 
 	ApiResponse deleteUser(Long id);
+
+	void changePassword(Long loggedInUserId, @Valid ChangePasswordDto changePasswordDto);
 	
 	
 }
