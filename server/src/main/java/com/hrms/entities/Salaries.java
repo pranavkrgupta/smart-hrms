@@ -36,7 +36,7 @@ public class Salaries extends BaseEntity {
 	@NotNull(message = "User is mandatory")
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "user_id", nullable = false)
-	private User user;
+	private UserEntity user;
 
 	@NotNull(message = "Amount is mandatory")
 	@DecimalMin(value = "0.00", inclusive = true, message = "Amount must be non-negative")

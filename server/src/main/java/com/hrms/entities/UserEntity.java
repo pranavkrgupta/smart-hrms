@@ -39,7 +39,7 @@ import lombok.ToString;
 @Entity 
 @Table(name = "Users")
 @ToString
-public class User extends BaseEntity{
+public class UserEntity extends BaseEntity{
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "user_id")

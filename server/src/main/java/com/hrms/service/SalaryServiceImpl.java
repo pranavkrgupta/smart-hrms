@@ -8,7 +8,7 @@ import com.hrms.dao.UserDao;
 import com.hrms.dto.SalaryDTO;
 import com.hrms.dto.SalaryRespDTO;
 import com.hrms.entities.Salaries;
-import com.hrms.entities.User;
+import com.hrms.entities.UserEntity;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 
@@ -51,7 +51,7 @@ public class SalaryServiceImpl implements SalaryService{
 	public String addNewSalary(Long UserId, SalaryDTO dto) {
 		
 		// It is used to fetch the user entity from the db based on user id present in salary dto
-		User user = userDao.findById(UserId)
+		UserEntity user = userDao.findById(UserId)
 				.orElseThrow(()-> new RuntimeException("User not found"));
 
 		Salaries salary = modelMapper.map(dto,Salaries.class);

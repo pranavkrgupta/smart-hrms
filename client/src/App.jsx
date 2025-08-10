@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate, replace } from "react-router-dom";
 import AdminLayout from "./layouts/AdminLayout";
 import EmployeeLayout from "./layouts/EmployeeLayout";
 import Login from "./pages/Login";
@@ -17,34 +17,42 @@ import AdminProfile from "./pages/admin/Profile";
 import AdminSettings from "./pages/admin/Settings";
 import AdminDashboard from "./pages/admin/Dashboard";
 import Salary from "./pages/admin/Salary";
+import Unauthorized from "./pages/Unauthorized";
+import PrivateRoute from "./components/PrivateRoute";
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Login />} />
-      {/* Admin Route */}
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route index element={<AdminDashboard />} />
-        <Route path="dashboard" element={<AdminDashboard />} />
-        <Route path="profile" element={<AdminProfile />} />
-        <Route path="settings" element={<AdminSettings />} />
-        <Route path="manage-leave" element={<LeaveManagement />} />
-        <Route path="manage-attendance" element={<AttendanceManagement />} />
-        <Route path="manage-employees" element={<ManageEmployees />} />
-        <Route path="manage-departments" element={<ManageDepartments />} />
-        <Route path="manage-designations" element={<ManageDesignation />} />
-        <Route path="Salary" element={<Salary />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/unauthorized" element={<Unauthorized />} />
+      {/* Protected Admin Route */}
+      {/* Protected admin routes */}
+      <Route element={<PrivateRoute allowedRoles={["ROLE_ADMIN"]} />}>
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="profile" element={<AdminProfile />} />
+          <Route path="settings" element={<AdminSettings />} />
+          <Route path="manage-leave" element={<LeaveManagement />} />
+          <Route path="manage-attendance" element={<AttendanceManagement />} />
+          <Route path="manage-employees" element={<ManageEmployees />} />
+          <Route path="manage-departments" element={<ManageDepartments />} />
+          <Route path="manage-designations" element={<ManageDesignation />} />
+          <Route path="salary" element={<Salary />} />
+        </Route>
       </Route>
-
-      {/* Employee Route */}
-      <Route path="/employee" element={<EmployeeLayout />}>
-        <Route index element={<Dashboard />} />
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="leave" element={<Leave />} />
-        <Route path="settings" element={<Settings />} />
-        <Route path="salaryDetails" element={<SalaryDetails />} />
-        <Route path="attendance" element={<Attendance />} />
-        <Route path="profile" element={<Profile />} />
+      {/* Protected Employee Route */}
+      <Route element={<PrivateRoute allowedRoles={["ROLE_EMPLOYEE"]} />}>
+        <Route path="/employee" element={<EmployeeLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="leave" element={<Leave />} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="salaryDetails" element={<SalaryDetails />} />
+          <Route path="attendance" element={<Attendance />} />
+          <Route path="profile" element={<Profile />} />
+        </Route>
       </Route>
+      <Route path="*" element={<Navigate to="/login" replace />} />{" "}
     </Routes>
   );
 }

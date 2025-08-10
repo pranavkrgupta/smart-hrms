@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,7 +16,7 @@ import com.hrms.dto.ApiResponse;
 import com.hrms.dto.UserReqDto;
 import com.hrms.dto.UserRespDto;
 import com.hrms.entities.Designation;
-import com.hrms.entities.User;
+import com.hrms.entities.UserEntity;
 import com.hrms.entities.UserRole;
 
 import io.swagger.v3.core.jackson.ApiResponsesSerializer;
@@ -24,6 +25,8 @@ import jakarta.validation.Valid;
 @Service
 @Transactional
 public class UserServiceImpl implements UserService {
+
+    private final PasswordEncoder passwordEncoder;
 
 	@Autowired
 	private final ModelMapper modelMapper;
@@ -34,8 +37,9 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private DesignationDao designationDao;
 
-	UserServiceImpl(ModelMapper modelMapper) {
+	UserServiceImpl(ModelMapper modelMapper, PasswordEncoder passwordEncoder) {
 		this.modelMapper = modelMapper;
+		this.passwordEncoder = passwordEncoder;
 	}
 
 	@Override
@@ -49,7 +53,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserRespDto createUser(@Valid UserReqDto userReqDto) {
-		User userEntity = modelMapper.map(userReqDto, User.class);
+		UserEntity userEntity = modelMapper.map(userReqDto, UserEntity.class);
 		userEntity.setUserId(null); // to avoid update instead of insert
 		userEntity.setUserRole(UserRole.ROLE_EMPLOYEE);
 
@@ -57,7 +61,7 @@ public class UserServiceImpl implements UserService {
 				.orElseThrow(() -> new ResourceNotFoundException("Designation Id is Incorrect"));
 
 		userEntity.setDesignation(designation);
-		userEntity.setPassword(userReqDto.getEmail());
+		userEntity.setPassword(passwordEncoder.encode(userReqDto.getEmail()));
 		userDao.save(userEntity);
 
 		UserRespDto dto = modelMapper.map(userEntity, UserRespDto.class);
@@ -68,7 +72,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserRespDto getUserById(Long user_id) {
-		User UserEntity = userDao.findById(user_id).orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
+		UserEntity UserEntity = userDao.findById(user_id).orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
 		UserRespDto dto = modelMapper.map(UserEntity, UserRespDto.class);
 		dto.setDepartmentName(UserEntity.getDesignation().getDepartment().getName());
 		return dto;
@@ -76,14 +80,14 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public ApiResponse updateUser(Long user_id, @Valid UserReqDto userReqDto) {
-	    User userEntity = userDao.findById(user_id)
+	    UserEntity userEntity = userDao.findById(user_id)
 	        .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
 
 	    // Get designation proxy
 	    Designation designation = designationDao.getReferenceById(userReqDto.getDesignationId());
 
 	    // Map userReqDto into a temporary User object
-	    User tempUser = modelMapper.map(userReqDto, User.class);
+	    UserEntity tempUser = modelMapper.map(userReqDto, UserEntity.class);
 
 	    // Copy fields individually to existing userEntity, but skip userId and designation
 	    userEntity.setName(tempUser.getName());
@@ -106,7 +110,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public ApiResponse deleteUser(Long user_id) {
-		User user = userDao.getReferenceById(user_id);
+		UserEntity user = userDao.getReferenceById(user_id);
 		userDao.delete(user);
 		return new ApiResponse("User Deleted Succesfully");
 	}

@@ -5,7 +5,7 @@ import com.hrms.dao.UserDao;
 import com.hrms.dto.LeaveDto;
 import com.hrms.dto.LeaveResDto;
 import com.hrms.entities.Leaves;
-import com.hrms.entities.User;
+import com.hrms.entities.UserEntity;
 import com.hrms.entities.LeaveStatus;
 import com.hrms.entities.LeaveType;
 import jakarta.transaction.Transactional;
@@ -35,7 +35,7 @@ public class LeaveServiceImpl implements LeaveService {
 
     @Override
     public void createLeave(Long userId, LeaveDto leaveDto) {
-        User user = userDao.getReferenceById(userId);
+        UserEntity user = userDao.getReferenceById(userId);
 
         Leaves entity = new Leaves();
         entity.setUser(user);

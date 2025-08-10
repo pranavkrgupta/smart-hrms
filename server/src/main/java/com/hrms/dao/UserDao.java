@@ -6,13 +6,15 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.hrms.entities.User;
+import com.hrms.entities.UserEntity;
 
-public interface UserDao extends JpaRepository<User, Long>{
+public interface UserDao extends JpaRepository<UserEntity, Long>{
 	
 	@EntityGraph(attributePaths = {"designation", "designation.department"})
-	List<User> findAll();
+	List<UserEntity> findAll();
 	
 	@EntityGraph(attributePaths = {"designation", "designation.department"})
-    Optional<User> findById(Long id);
+    Optional<UserEntity> findById(Long id);
+	
+	Optional<UserEntity> findByEmail(String email);
 }

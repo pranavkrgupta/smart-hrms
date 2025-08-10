@@ -20,7 +20,7 @@ public class Leaves extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     @NotNull(message = "User is mandatory")
-    private User user;
+    private UserEntity user;
 
     @NotNull(message = "From date is mandatory")
     @Column(name = "from_date", nullable = false)

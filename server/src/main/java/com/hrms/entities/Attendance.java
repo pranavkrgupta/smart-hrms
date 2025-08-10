@@ -21,7 +21,7 @@ public class Attendance extends BaseEntity {
 	@NotNull(message = "User is required")
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "user_id", nullable = false)
-	private User user;
+	private UserEntity user;
 
 	@NotNull(message = "Date is mandatory")
 	@Column(name = "date", nullable = false)

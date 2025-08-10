@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { loginService } from "../services/authService";
+import { jwtDecode } from "jwt-decode";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -10,40 +12,25 @@ function Login() {
     e.preventDefault();
 
     try {
-      const response = await fakeLoginAPI(email, password);
+      const response = await loginService(email, password);
+      
+      // save token to local storage
+      const token = response.data.token
+      localStorage.setItem("token", token);
 
-      if (response.success) {
-        const { role } = response.user;
-
-        if (role === "admin") {
-          navigate("/admin");
-        } else {
-          navigate("/employee");
-        }
-      } else {
-        alert("Invalid credentials");
-      }
+      // Decode token payload to get roles
+      const payload = jwtDecode(token);
+      const roles = payload.roles || [];
+      console.log("Payload", payload);
+      console.log("Roles:",roles);
+      
+      //Navigate based on role
+      if (roles.includes("ROLE_ADMIN")) navigate("/admin");
+      else if (roles.includes("ROLE_EMPLOYEE")) navigate("/employee");
+      else alert("No valid role found");
     } catch (error) {
-      console.error("Login error:", error);
+      alert(error.response?.data?.message || error.message || "Login failed");
     }
-  };
-
-  // Fake login API
-  const fakeLoginAPI = async (email, password) => {
-    if (email === "admin@hrms.com") {
-      return {
-        success: true,
-        user: { role: "admin", email },
-      };
-    } else if (email === "employee@hrms.com") {
-      return {
-        success: true,
-        user: { role: "employee", email },
-      };
-    } else
-      return {
-        success: false,
-      };
   };
 
   return (
