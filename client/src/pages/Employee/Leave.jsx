@@ -1,383 +1,301 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
+import {
+  addLeave,
+  deleteLeave,
+  getMyLeaves,
+  updateLeave,
+} from "../../services/leaveService";
 
-// Hardcoded user ID for testing — in production this should come from logged-in user's info
-const CURRENT_USER_ID = 1;
+function Leave() {
+  const [leaves, setLeaves] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-// Leave types: 'value' matches DB ENUM exactly, 'label' is for display
-const leaveTypes = [
-    { label: "Sick Leave", value: "SICK" },
-    { label: "Casual Leave", value: "CASUAL" },
-    { label: "Earned Leave", value: "EARNED" },
-];
+  const initialFormState = {
+    fromDate: "",
+    toDate: "",
+    reason: "",
+    type: "", // e.g. "Sick", "Casual" — adjust to your LeaveType enum
+  };
 
-// Map DB status values to human-friendly labels for display
-const statusLabels = {
-    PENDING: "Pending",
-    APPROVED: "Approved",
-    REJECTED: "Rejected",
-};
+  const [formData, setFormData] = useState(initialFormState);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editLeaveId, setEditLeaveId] = useState(null);
 
-// Annual leave quota for each type — purely frontend config here
-const LEAVE_QUOTA = {
-    SICK: 12,
-    CASUAL: 8,
-    EARNED: 15,
-};
+  // Filter/Search
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("All");
 
-const LeaveManagement = () => {
-    // All leave requests for this user
-    const [leaves, setLeaves] = useState([]);
-    const [loading, setLoading] = useState(true);
+  // Load employee leaves on mount
+  useEffect(() => {
+    loadLeaves();
+  }, []);
 
-    // Form state for add/edit
-    const [formData, setFormData] = useState({
-        id: null,
-        fromDate: "",
-        toDate: "",
-        reason: "",
-        type: "",
-        status: "PENDING", // default as per DB enum
-        comment: "",
-    });
+  const loadLeaves = () => {
+    getMyLeaves()
+      .then((res) => {
+        setLeaves(res.data);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
 
-    const [isEditing, setIsEditing] = useState(false);
-    const [searchText, setSearchText] = useState("");
+  // Handle form input change
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-    // Load leaves when component mounts
-    useEffect(() => {
-        fetchLeaves();
-    }, []);
+  // Validate form before submit
+  const validateForm = () => {
+    if (
+      !formData.fromDate ||
+      !formData.toDate ||
+      !formData.reason ||
+      !formData.type
+    ) {
+      alert("Please fill all fields");
+      return false;
+    }
+    if (new Date(formData.fromDate) > new Date(formData.toDate)) {
+      alert("'From Date' must be before or equal to 'To Date'");
+      return false;
+    }
+    return true;
+  };
 
-    // Fetch leave data from backend
-    const fetchLeaves = async () => {
-        setLoading(true);
-        try {
-            const res = await axios.get(
-                `http://localhost:8080/api/leaves/user/${CURRENT_USER_ID}`
-            );
-            setLeaves(Array.isArray(res.data) ? res.data : []);
-        } catch (err) {
-            console.error("Failed to fetch leaves", err);
-            setLeaves([]);
-        }
-        setLoading(false);
-    };
+  // Submit new leave or update existing leave
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
 
-    // Handles any form input change
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-    };
+    const apiCall = isEditing
+      ? updateLeave(editLeaveId, formData)
+      : addLeave(formData);
 
-    // Reset form back to initial state
-    const resetForm = () => {
-        setFormData({
-            id: null,
-            fromDate: "",
-            toDate: "",
-            reason: "",
-            type: "",
-            status: "PENDING",
-            comment: "",
-        });
+    apiCall
+      .then(() => {
+        loadLeaves();
+        setFormData(initialFormState);
         setIsEditing(false);
-    };
+        setEditLeaveId(null);
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("Failed to submit leave request.");
+      });
+  };
 
-    // Count how many approved leaves user has already consumed for each type
-    const calculateUsedLeaves = (leaveList) => {
-        const used = { SICK: 0, CASUAL: 0, EARNED: 0 };
-        leaveList.forEach((leave) => {
-            if (leave.status === "APPROVED") {
-                const from = new Date(leave.fromDate);
-                const to = new Date(leave.toDate);
-                const days = Math.floor((to - from) / (1000 * 60 * 60 * 24)) + 1;
-                used[leave.type] += days;
-            }
-        });
-        return used;
-    };
-
-    // Validate and save form data (either new request or update existing)
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        // Basic input validation
-        if (!formData.fromDate || !formData.toDate) {
-            alert("Please enter both From Date and To Date");
-            return;
-        }
-        if (new Date(formData.fromDate) > new Date(formData.toDate)) {
-            alert("'From Date' cannot be later than 'To Date'");
-            return;
-        }
-        if (!formData.type) {
-            alert("Please select a Leave Type");
-            return;
-        }
-        if (!formData.reason.trim()) {
-            alert("Please enter a Reason");
-            return;
-        }
-
-        // Calculate days requested
-        const from = new Date(formData.fromDate);
-        const to = new Date(formData.toDate);
-        const daysRequested =
-            Math.floor((to - from) / (1000 * 60 * 60 * 24)) + 1;
-
-        // Quota restrictions
-        const usedLeaves = calculateUsedLeaves(leaves);
-        const remaining = LEAVE_QUOTA[formData.type] - usedLeaves[formData.type];
-
-        if (daysRequested > remaining) {
-            alert(
-                `You only have ${remaining} ${formData.type} leave day(s) left. Please adjust your dates.`
-            );
-            return;
-        }
-
-        const payload = {
-            fromDate: formData.fromDate,
-            toDate: formData.toDate,
-            reason: formData.reason,
-            type: formData.type,      // already uppercase
-            status: formData.status,  // already uppercase
-            comment: formData.comment,
-        };
-
-        try {
-            if (isEditing && formData.id) {
-                // Update existing leave
-                await axios.put(
-                    `http://localhost:8080/api/leaves/${formData.id}`,
-                    payload
-                );
-                alert("Leave updated successfully!");
-            } else {
-                // Create new leave request
-                await axios.post(
-                    `http://localhost:8080/api/leaves/${CURRENT_USER_ID}`,
-                    payload
-                );
-                alert("Leave requested successfully!");
-            }
-            resetForm();
-            fetchLeaves();
-        } catch (error) {
-            alert(
-                "Failed to submit leave: " +
-                (error.response?.data?.message || error.message || "Unknown error")
-            );
-        }
-    };
-
-    // Load a leave into form for editing
-    const handleEdit = (leave) => {
-        setFormData({
-            id: leave.id,
-            fromDate: leave.fromDate,
-            toDate: leave.toDate,
-            reason: leave.reason,
-            type: leave.type,       // uppercase from DB
-            status: leave.status,   // uppercase from DB
-            comment: leave.comment || "",
-        });
-        setIsEditing(true);
-    };
-
-    // Delete a leave (after confirmation)
-    const handleDelete = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this leave?")) return;
-        try {
-            await axios.delete(`http://localhost:8080/api/leaves/${id}`);
-            alert("Leave deleted successfully!");
-            fetchLeaves();
-        } catch {
-            alert("Failed to delete leave");
-        }
-    };
-
-    // Filter leaves by search text (case-insensitive)
-    const filteredLeaves = leaves.filter((leave) => {
-        const searchLower = searchText.toLowerCase();
-        return (
-            (leave.type && leave.type.toLowerCase().includes(searchLower)) ||
-            (leave.reason && leave.reason.toLowerCase().includes(searchLower)) ||
-            (leave.status && leave.status.toLowerCase().includes(searchLower))
-        );
+  // Start editing a leave
+  const handleEdit = (leave) => {
+    setIsEditing(true);
+    setEditLeaveId(leave.id);
+    setFormData({
+      fromDate: leave.fromDate,
+      toDate: leave.toDate,
+      reason: leave.reason,
+      type: leave.type,
     });
+  };
 
-    // Current used leave counts for displaying quotas
-    const usedLeaves = calculateUsedLeaves(leaves);
+  // Delete a leave
+  const handleDelete = (leaveId) => {
+    if (window.confirm("Are you sure you want to delete this leave?")) {
+      deleteLeave(leaveId)
+        .then(() => loadLeaves())
+        .catch((err) => {
+          console.error(err);
+          alert("Failed to delete leave.");
+        });
+    }
+  };
 
-    return (
-        <div className="max-w-4xl mx-auto p-6">
-            <h1 className="text-2xl font-bold mb-4">Leave Management</h1>
+  // Filter leaves based on search and status
+  const filteredLeaves = leaves.filter((leave) => {
+    const matchesSearch = (leave.reason)
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      filterStatus === "All" || leave.status === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
 
-            {/* Search bar */}
-            <div className="flex mb-4 space-x-2">
-                <input
-                    type="text"
-                    placeholder="Search by Type, Status, Reason"
-                    value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
-                    className="border rounded p-2 flex-grow"
-                />
-                <button
-                    onClick={() => setSearchText("")}
-                    className="bg-gray-400 text-white px-4 rounded"
-                >
-                    Reset
-                </button>
-            </div>
+  return (
+    <div className="p-4 max-w-full mx-auto">
+      <h1 className="text-2xl font-semibold mb-4">My Leave Requests</h1>
 
-            {/* Display leave quota summary */}
-            <div className="mb-4 p-3 border rounded bg-gray-50">
-                <h2 className="font-semibold mb-2">Leave Quotas</h2>
-                <ul className="list-disc list-inside">
-                    {Object.keys(LEAVE_QUOTA).map((type) => (
-                        <li key={type}>
-                            {type}: {LEAVE_QUOTA[type] - usedLeaves[type]} remaining out of{" "}
-                            {LEAVE_QUOTA[type]}
-                        </li>
-                    ))}
-                </ul>
-            </div>
+      {error && <div className="text-red-600 mb-2">{error}</div>}
 
-            {/* Table of leave requests */}
-            {loading ? (
-                <p>Loading leaves...</p>
-            ) : (
-                <table className="w-full border border-collapse mb-6 text-left">
-                    <thead className="bg-gray-100">
-                        <tr>
-                            <th className="border p-2">Type</th>
-                            <th className="border p-2">From Date</th>
-                            <th className="border p-2">To Date</th>
-                            <th className="border p-2">Reason</th>
-                            <th className="border p-2">Status</th>
-                            <th className="border p-2">Comment</th>
-                            <th className="border p-2">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredLeaves.length === 0 ? (
-                            <tr>
-                                <td className="p-2 text-center" colSpan={7}>
-                                    No leaves found.
-                                </td>
-                            </tr>
-                        ) : (
-                            filteredLeaves.map((leave) => (
-                                <tr key={leave.id}>
-                                    {/* We keep type raw from DB for now */}
-                                    <td className="border p-2">{leave.type}</td>
-                                    <td className="border p-2">{leave.fromDate}</td>
-                                    <td className="border p-2">{leave.toDate}</td>
-                                    <td className="border p-2">{leave.reason}</td>
-                                    <td className="border p-2">
-                                        {statusLabels[leave.status] || leave.status}
-                                    </td>
-                                    <td className="border p-2">{leave.comment || "-"}</td>
-                                    <td className="border p-2 space-x-2">
-                                        <button
-                                            className="text-blue-600 hover:underline"
-                                            onClick={() => handleEdit(leave)}
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            className="text-red-600 hover:underline"
-                                            onClick={() => handleDelete(leave.id)}
-                                        >
-                                            Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
-            )}
+      {/* Search & Filter */}
+      <div className="flex gap-4 mb-4">
+        <input
+          type="text"
+          placeholder="Search by reason"
+          className="border p-2 rounded flex-grow"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <select
+          className="border p-2 rounded"
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+        >
+          <option value="All">Filter by Status</option>
+          <option value="Pending">Pending</option>
+          <option value="Approved">Approved</option>
+          <option value="Rejected">Rejected</option>
+        </select>
+        <button
+          className="bg-blue-600 text-white px-4 rounded"
+          onClick={() => {
+            setSearchTerm("");
+            setFilterStatus("All");
+          }}
+        >
+          Reset
+        </button>
+      </div>
 
-            {/* Add/Edit leave form */}
-            <h2 className="text-xl font-semibold mb-2">
-                {isEditing ? "Edit Leave" : "Request Leave"}
-            </h2>
-            <form
-                onSubmit={handleSubmit}
-                className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-xl"
+      {/* Leave List Table */}
+      {loading ? (
+        <div>Loading...</div>
+      ) : filteredLeaves.length === 0 ? (
+        <div className="text-gray-600 italic">No leave requests found.</div>
+      ) : (
+        <table className="w-full border-collapse border">
+          <thead>
+            <tr className="bg-gray-200">
+              {/* <th className="border p-2">ID</th> */}
+              <th className="border p-2">Leave Type</th>
+              <th className="border p-2">From</th>
+              <th className="border p-2">To</th>
+              <th className="border p-2">Reason</th>
+              <th className="border p-2">Status</th>
+              <th className="border p-2">Admin Comment</th>
+              <th className="border p-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredLeaves.map((leave) => (
+              <tr key={leave.id}>
+                {/* <td className="border p-2">{leave.id}</td> */}
+                <td className="border p-2">{leave.type}</td>
+                <td className="border p-2">{leave.fromDate || leave.from}</td>
+                <td className="border p-2">{leave.toDate || leave.to}</td>
+                <td className="border p-2">{leave.reason}</td>
+                <td className="border p-2">{leave.comment}</td>
+                <td className="border p-2">{leave.status}</td>
+                <td className="border p-2">
+                  {leave.status === "Pending" && (
+                    <>
+                      <button
+                        className="text-blue-600 mr-2 underline"
+                        onClick={() => handleEdit(leave)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="text-red-600 underline"
+                        onClick={() => handleDelete(leave.id)}
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
+                  {leave.status !== "Pending" && <span>-</span>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      {/* Add/Edit Leave Form */}
+      <div className="mt-8 border p-4 rounded shadow-md max-w-full">
+        <h2 className="text-xl font-semibold mb-4">
+          {isEditing ? "Edit Leave Request" : "Add New Leave"}
+        </h2>
+        <form onSubmit={handleSubmit}>
+          <div className="flex gap-4 mb-4">
+            <label className="flex-1 flex flex-col">
+              Leave Type
+              <select
+                name="type"
+                value={formData.type}
+                onChange={handleChange}
+                className="border p-2 rounded w-full "
+                required
+              >
+                <option value="">Select leave type</option>
+                <option value="Casual">Casual</option>
+                <option value="Sick">Sick</option>
+                <option value="Earned">Earned</option>
+              </select>
+            </label>
+
+            <label className="flex-1 flex flex-col">
+              From Date
+              <input
+                type="date"
+                name="fromDate"
+                value={formData.fromDate}
+                onChange={handleChange}
+                className="border p-2 rounded w-full"
+                required
+              />
+            </label>
+
+            <label className="flex-1 flex flex-col">
+              To Date
+              <input
+                type="date"
+                name="toDate"
+                value={formData.toDate}
+                onChange={handleChange}
+                className="border p-2 rounded w-full"
+                required
+              />
+            </label>
+          </div>
+
+          <label className="block mb-2">
+            Reason
+            <textarea
+              name="reason"
+              value={formData.reason}
+              onChange={handleChange}
+              className="border p-2 rounded w-full"
+              rows={3}
+              required
+            />
+          </label>
+
+          <div className="flex gap-4 mt-4">
+            <button
+              type="submit"
+              className="bg-green-600 text-white px-4 py-2 rounded"
             >
-                {/* Type dropdown */}
-                <select
-                    name="type"
-                    value={formData.type}
-                    onChange={handleChange}
-                    required
-                    className="border p-2 rounded"
-                >
-                    <option value="">-- Select Leave Type --</option>
-                    {leaveTypes.map(({ label, value }) => {
-                        const remaining = LEAVE_QUOTA[value] - usedLeaves[value];
-                        return (
-                            <option key={value} value={value}>
-                                {label} (Remaining: {remaining})
-                            </option>
-                        );
-                    })}
-                </select>
+              {isEditing ? "Update Leave" : "Submit Leave"}
+            </button>
+            {isEditing && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsEditing(false);
+                  setEditLeaveId(null);
+                  setFormData(initialFormState);
+                }}
+                className="bg-gray-400 text-white px-4 py-2 rounded"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
 
-                {/* Dates */}
-                <input
-                    type="date"
-                    name="fromDate"
-                    value={formData.fromDate}
-                    onChange={handleChange}
-                    required
-                    className="border p-2 rounded"
-                />
-                <input
-                    type="date"
-                    name="toDate"
-                    value={formData.toDate}
-                    onChange={handleChange}
-                    required
-                    className="border p-2 rounded"
-                />
-
-                {/* Reason & optional comment */}
-                <input
-                    type="text"
-                    name="reason"
-                    placeholder="Reason"
-                    value={formData.reason}
-                    onChange={handleChange}
-                    required
-                    className="border p-2 rounded md:col-span-2"
-                />
-                <input
-                    type="text"
-                    name="comment"
-                    placeholder="Comment (optional)"
-                    value={formData.comment}
-                    onChange={handleChange}
-                    className="border p-2 rounded md:col-span-2"
-                />
-
-                {/* Submit button */}
-                <button
-                    type="submit"
-                    className="bg-green-600 text-white p-2 rounded md:col-span-2"
-                >
-                    {isEditing ? "Update Leave" : "Submit Leave Request"}
-                </button>
-            </form>
-        </div>
-    );
-};
-
-export default LeaveManagement;
+export default Leave;

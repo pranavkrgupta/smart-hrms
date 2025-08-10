@@ -1,7 +1,7 @@
 package com.hrms.entities;
 
 public enum LeaveType {
-	SICK,
-    CASUAL,
-    EARNED
+	Sick,
+    Casual,
+    Earned
 }

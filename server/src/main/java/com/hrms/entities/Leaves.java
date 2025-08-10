@@ -11,13 +11,14 @@ import java.time.*;
 @AllArgsConstructor
 @Entity
 @ToString
+@Builder
 public class Leaves extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     @NotNull(message = "User is mandatory")
     private UserEntity user;
