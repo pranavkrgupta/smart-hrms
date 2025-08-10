@@ -16,16 +16,15 @@ import ManageDesignation from "./pages/admin/ManageDesignation";
 import AdminProfile from "./pages/admin/Profile";
 import AdminSettings from "./pages/admin/Settings";
 import AdminDashboard from "./pages/admin/Dashboard";
-import Salary from "./pages/admin/Salary";
 import Unauthorized from "./pages/Unauthorized";
 import PrivateRoute from "./components/PrivateRoute";
+import ManageSalary from "./pages/admin/ManageSalary";
 function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
       {/* Protected Admin Route */}
-      {/* Protected admin routes */}
       <Route element={<PrivateRoute allowedRoles={["ROLE_ADMIN"]} />}>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
@@ -37,7 +36,7 @@ function App() {
           <Route path="manage-employees" element={<ManageEmployees />} />
           <Route path="manage-departments" element={<ManageDepartments />} />
           <Route path="manage-designations" element={<ManageDesignation />} />
-          <Route path="salary" element={<Salary />} />
+          <Route path="manage-salaries" element={<ManageSalary />} />
         </Route>
       </Route>
       {/* Protected Employee Route */}

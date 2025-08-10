@@ -9,9 +9,9 @@ const adminLinks = [
   { label: "Manage Designations", path: "/admin/manage-designations" },
   { label: "Manage Leaves", path: "/admin/manage-leave" },
   { label: "Manage Attendance", path: "/admin/manage-attendance" },
+  { label: "Manage Salary", path: "/admin/manage-salaries" },
   { label: "Profile", path: "/admin/profile" },
   { label: "Settings", path: "/admin/settings" },
-  { label: "Salary", path: "/admin/salary" },
 ];
 
 function AdminLayout() {

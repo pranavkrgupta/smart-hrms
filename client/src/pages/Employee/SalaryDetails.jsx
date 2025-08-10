@@ -1,24 +1,29 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { getSalaryByUser } from "../../services/salaryService";
+import { jwtDecode } from "jwt-decode";
 
-// As of taken hard core values
-const CURRENT_USER_ID = 9;
-const API_BASE = "http://localhost:8080/api/salaries";
-
-const SalaryTest = () => {
-  const [salary, setSalary] = useState(null);
-  // Only one salary record for the current user.
+const EmployeeSalary = () => {
+  const [salaryList, setSalaryList] = useState([]);
   const [message, setMessage] = useState("");
+  const [userName, setUserName] = useState("");
 
-  // Load salary for the logged-in user
+  // Fetch salaries for logged-in user
   const fetchSalary = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/${CURRENT_USER_ID}`);
-      console.log("Salary Data:", res.data); // Debugging step
-      if (res.data) {
-        setSalary(res.data);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setMessage("You are not logged in.");
+        return;
+      }
+
+      const decoded = jwtDecode(token);
+      setUserName(decoded.username || "Employee");
+
+      const res = await getSalaryByUser();
+      if (res.data && res.data.length > 0) {
+        setSalaryList(res.data);
       } else {
-        setMessage("No salary records found for this user.");
+        setMessage("No salary records found.");
       }
     } catch (err) {
       console.error("Error fetching salary:", err);
@@ -30,11 +35,10 @@ const SalaryTest = () => {
     fetchSalary();
   }, []);
 
-  // Handle download of payslip as a text file
-  const downloadTextFile = () => {
-    // Create text content for the salary details including userName
+  // Download payslip for a salary record
+  const downloadPayslip = (salary) => {
     const textContent = `
-      Salary Payslip for User : (${salary.userName})
+      Salary Payslip for: ${userName}
       -------------------------------------------
       Basic Salary: ${salary.amount}
       Gross Salary: ${salary.amount}
@@ -47,14 +51,11 @@ const SalaryTest = () => {
       }
     `;
 
-    // Create a Blob from the text content
     const blob = new Blob([textContent], { type: "text/plain" });
-
-    // Create a link to trigger the download
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `Payslip_${CURRENT_USER_ID}.txt`; // Name the file dynamically based on user ID
-    link.click(); // Trigger the download
+    link.download = `Payslip_${salary.id}.txt`;
+    link.click();
   };
 
   return (
@@ -64,48 +65,47 @@ const SalaryTest = () => {
 
         {message && <p className="mb-4 text-blue-600">{message}</p>}
 
-        {salary ? (
-          <>
-            <div className="grid grid-cols-1 gap-6 mb-8">
-              <div className="p-6 border rounded-lg bg-gray-100">
+        {salaryList.length > 0 ? (
+          <div className="space-y-6">
+            {salaryList.map((salary) => (
+              <div
+                key={salary.id}
+                className="p-6 border rounded-lg bg-gray-100 shadow-sm"
+              >
                 <p>
-                  <strong className="text-lg">Basic Salary:</strong>{" "}
-                  {salary.amount}
+                  <strong>Basic Salary:</strong> {salary.amount}
                 </p>
                 <p>
-                  <strong className="text-lg">Gross Salary:</strong>{" "}
-                  {salary.amount}
+                  <strong>Gross Salary:</strong> {salary.amount}
                 </p>
                 <p>
-                  <strong className="text-lg">PF Deduction:</strong>{" "}
-                  {salary.pfDeduction || 0}
+                  <strong>PF Deduction:</strong> {salary.pfDeduction || 0}
                 </p>
                 <p>
-                  <strong className="text-lg">Net Salary:</strong>{" "}
+                  <strong>Net Salary:</strong>{" "}
                   {salary.amount - (salary.pfDeduction || 0)}
                 </p>
                 <p>
-                  <strong className="text-lg">Applicable From:</strong>{" "}
+                  <strong>Applicable From:</strong>{" "}
                   {salary.applicableFrom
                     ? new Date(salary.applicableFrom).toLocaleDateString()
                     : "N/A"}
                 </p>
+                <button
+                  onClick={() => downloadPayslip(salary)}
+                  className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+                >
+                  Download Payslip
+                </button>
               </div>
-
-              <button
-                onClick={downloadTextFile}
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 text-xl"
-              >
-                Download Payslip
-              </button>
-            </div>
-          </>
+            ))}
+          </div>
         ) : (
-          <p>No salary records found for this user.</p>
+          <p>No salary records available.</p>
         )}
       </div>
     </div>
   );
 };
 
-export default SalaryTest;
+export default EmployeeSalary;
