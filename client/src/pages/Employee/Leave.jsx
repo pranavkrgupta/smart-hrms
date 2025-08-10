@@ -1,58 +1,70 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-// Hardcoded current user ID for now — replace with auth dynamic ID later
+// Hardcoded user ID for testing — in production this should come from logged-in user's info
 const CURRENT_USER_ID = 1;
 
-// Leave types matching your LeaveType enum in backend
+// Leave types: 'value' matches DB ENUM exactly, 'label' is for display
 const leaveTypes = [
-    { label: "Sick Leave", value: "Sick" },
-    { label: "Casual Leave", value: "Casual" },
-    { label: "Earned Leave", value: "Earned" },
+    { label: "Sick Leave", value: "SICK" },
+    { label: "Casual Leave", value: "CASUAL" },
+    { label: "Earned Leave", value: "EARNED" },
 ];
 
-// Status labels matching your LeaveStatus enum in backend
+// Map DB status values to human-friendly labels for display
 const statusLabels = {
-    Pending: "Pending",
-    Approved: "Approved",
-    Rejected: "Rejected",
+    PENDING: "Pending",
+    APPROVED: "Approved",
+    REJECTED: "Rejected",
+};
+
+// Annual leave quota for each type — purely frontend config here
+const LEAVE_QUOTA = {
+    SICK: 12,
+    CASUAL: 8,
+    EARNED: 15,
 };
 
 const LeaveManagement = () => {
+    // All leave requests for this user
     const [leaves, setLeaves] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Form state for add/edit
     const [formData, setFormData] = useState({
         id: null,
         fromDate: "",
         toDate: "",
         reason: "",
         type: "",
-        status: "Pending", // default on creation
+        status: "PENDING", // default as per DB enum
         comment: "",
     });
+
     const [isEditing, setIsEditing] = useState(false);
     const [searchText, setSearchText] = useState("");
 
-    // Fetch leaves on load
+    // Load leaves when component mounts
     useEffect(() => {
         fetchLeaves();
     }, []);
 
+    // Fetch leave data from backend
     const fetchLeaves = async () => {
         setLoading(true);
         try {
-            const response = await axios.get(
+            const res = await axios.get(
                 `http://localhost:8080/api/leaves/user/${CURRENT_USER_ID}`
             );
-            setLeaves(Array.isArray(response.data) ? response.data : []);
-        } catch (error) {
-            console.error("Failed to fetch leaves", error);
+            setLeaves(Array.isArray(res.data) ? res.data : []);
+        } catch (err) {
+            console.error("Failed to fetch leaves", err);
             setLeaves([]);
         }
         setLoading(false);
     };
 
-    // Handle form field changes
+    // Handles any form input change
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({
@@ -61,7 +73,7 @@ const LeaveManagement = () => {
         }));
     };
 
-    // Reset form to initial state
+    // Reset form back to initial state
     const resetForm = () => {
         setFormData({
             id: null,
@@ -69,17 +81,31 @@ const LeaveManagement = () => {
             toDate: "",
             reason: "",
             type: "",
-            status: "Pending",
+            status: "PENDING",
             comment: "",
         });
         setIsEditing(false);
     };
 
-    // Validate and submit form
+    // Count how many approved leaves user has already consumed for each type
+    const calculateUsedLeaves = (leaveList) => {
+        const used = { SICK: 0, CASUAL: 0, EARNED: 0 };
+        leaveList.forEach((leave) => {
+            if (leave.status === "APPROVED") {
+                const from = new Date(leave.fromDate);
+                const to = new Date(leave.toDate);
+                const days = Math.floor((to - from) / (1000 * 60 * 60 * 24)) + 1;
+                used[leave.type] += days;
+            }
+        });
+        return used;
+    };
+
+    // Validate and save form data (either new request or update existing)
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Basic validations
+        // Basic input validation
         if (!formData.fromDate || !formData.toDate) {
             alert("Please enter both From Date and To Date");
             return;
@@ -97,24 +123,46 @@ const LeaveManagement = () => {
             return;
         }
 
-        // Prepare payload for backend
+        // Calculate days requested
+        const from = new Date(formData.fromDate);
+        const to = new Date(formData.toDate);
+        const daysRequested =
+            Math.floor((to - from) / (1000 * 60 * 60 * 24)) + 1;
+
+        // Quota restrictions
+        const usedLeaves = calculateUsedLeaves(leaves);
+        const remaining = LEAVE_QUOTA[formData.type] - usedLeaves[formData.type];
+
+        if (daysRequested > remaining) {
+            alert(
+                `You only have ${remaining} ${formData.type} leave day(s) left. Please adjust your dates.`
+            );
+            return;
+        }
+
         const payload = {
             fromDate: formData.fromDate,
             toDate: formData.toDate,
             reason: formData.reason,
-            type: formData.type,
-            status: formData.status,
+            type: formData.type,      // already uppercase
+            status: formData.status,  // already uppercase
             comment: formData.comment,
         };
 
         try {
             if (isEditing && formData.id) {
                 // Update existing leave
-                await axios.put(`http://localhost:8080/api/leaves/${formData.id}`, payload);
+                await axios.put(
+                    `http://localhost:8080/api/leaves/${formData.id}`,
+                    payload
+                );
                 alert("Leave updated successfully!");
             } else {
                 // Create new leave request
-                await axios.post(`http://localhost:8080/api/leaves/${CURRENT_USER_ID}`, payload);
+                await axios.post(
+                    `http://localhost:8080/api/leaves/${CURRENT_USER_ID}`,
+                    payload
+                );
                 alert("Leave requested successfully!");
             }
             resetForm();
@@ -127,21 +175,21 @@ const LeaveManagement = () => {
         }
     };
 
-    // Prefill form to edit an existing leave
+    // Load a leave into form for editing
     const handleEdit = (leave) => {
         setFormData({
             id: leave.id,
             fromDate: leave.fromDate,
             toDate: leave.toDate,
             reason: leave.reason,
-            type: leave.type,
-            status: leave.status,
+            type: leave.type,       // uppercase from DB
+            status: leave.status,   // uppercase from DB
             comment: leave.comment || "",
         });
         setIsEditing(true);
     };
 
-    // Delete leave by id
+    // Delete a leave (after confirmation)
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure you want to delete this leave?")) return;
         try {
@@ -153,7 +201,7 @@ const LeaveManagement = () => {
         }
     };
 
-    // Filter leaves based on search input
+    // Filter leaves by search text (case-insensitive)
     const filteredLeaves = leaves.filter((leave) => {
         const searchLower = searchText.toLowerCase();
         return (
@@ -163,11 +211,14 @@ const LeaveManagement = () => {
         );
     });
 
+    // Current used leave counts for displaying quotas
+    const usedLeaves = calculateUsedLeaves(leaves);
+
     return (
         <div className="max-w-4xl mx-auto p-6">
             <h1 className="text-2xl font-bold mb-4">Leave Management</h1>
 
-            {/* Search box */}
+            {/* Search bar */}
             <div className="flex mb-4 space-x-2">
                 <input
                     type="text"
@@ -184,6 +235,20 @@ const LeaveManagement = () => {
                 </button>
             </div>
 
+            {/* Display leave quota summary */}
+            <div className="mb-4 p-3 border rounded bg-gray-50">
+                <h2 className="font-semibold mb-2">Leave Quotas</h2>
+                <ul className="list-disc list-inside">
+                    {Object.keys(LEAVE_QUOTA).map((type) => (
+                        <li key={type}>
+                            {type}: {LEAVE_QUOTA[type] - usedLeaves[type]} remaining out of{" "}
+                            {LEAVE_QUOTA[type]}
+                        </li>
+                    ))}
+                </ul>
+            </div>
+
+            {/* Table of leave requests */}
             {loading ? (
                 <p>Loading leaves...</p>
             ) : (
@@ -209,11 +274,14 @@ const LeaveManagement = () => {
                         ) : (
                             filteredLeaves.map((leave) => (
                                 <tr key={leave.id}>
+                                    {/* We keep type raw from DB for now */}
                                     <td className="border p-2">{leave.type}</td>
                                     <td className="border p-2">{leave.fromDate}</td>
                                     <td className="border p-2">{leave.toDate}</td>
                                     <td className="border p-2">{leave.reason}</td>
-                                    <td className="border p-2">{statusLabels[leave.status] || leave.status}</td>
+                                    <td className="border p-2">
+                                        {statusLabels[leave.status] || leave.status}
+                                    </td>
                                     <td className="border p-2">{leave.comment || "-"}</td>
                                     <td className="border p-2 space-x-2">
                                         <button
@@ -236,11 +304,15 @@ const LeaveManagement = () => {
                 </table>
             )}
 
-            {/* Leave request form */}
+            {/* Add/Edit leave form */}
             <h2 className="text-xl font-semibold mb-2">
                 {isEditing ? "Edit Leave" : "Request Leave"}
             </h2>
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-xl">
+            <form
+                onSubmit={handleSubmit}
+                className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-xl"
+            >
+                {/* Type dropdown */}
                 <select
                     name="type"
                     value={formData.type}
@@ -249,13 +321,17 @@ const LeaveManagement = () => {
                     className="border p-2 rounded"
                 >
                     <option value="">-- Select Leave Type --</option>
-                    {leaveTypes.map(({ label, value }) => (
-                        <option key={value} value={value}>
-                            {label}
-                        </option>
-                    ))}
+                    {leaveTypes.map(({ label, value }) => {
+                        const remaining = LEAVE_QUOTA[value] - usedLeaves[value];
+                        return (
+                            <option key={value} value={value}>
+                                {label} (Remaining: {remaining})
+                            </option>
+                        );
+                    })}
                 </select>
 
+                {/* Dates */}
                 <input
                     type="date"
                     name="fromDate"
@@ -273,6 +349,7 @@ const LeaveManagement = () => {
                     className="border p-2 rounded"
                 />
 
+                {/* Reason & optional comment */}
                 <input
                     type="text"
                     name="reason"
@@ -282,7 +359,6 @@ const LeaveManagement = () => {
                     required
                     className="border p-2 rounded md:col-span-2"
                 />
-
                 <input
                     type="text"
                     name="comment"
@@ -292,6 +368,7 @@ const LeaveManagement = () => {
                     className="border p-2 rounded md:col-span-2"
                 />
 
+                {/* Submit button */}
                 <button
                     type="submit"
                     className="bg-green-600 text-white p-2 rounded md:col-span-2"
