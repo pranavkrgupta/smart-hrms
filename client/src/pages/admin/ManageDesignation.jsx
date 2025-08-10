@@ -1,193 +1,293 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Modal from "../../components/Modal";
+import {
+  getDesignations,
+  createDesignation,
+  updateDesignation,
+  deleteDesignation,
+} from "../../services/designationService";
+import axios from "axios";
+import { getAllDepartments } from "../../services/departmentService";
 
 export default function ManageDesignation() {
-    const [designations, setDesignations] = useState([
-        {
-            id: 1,
-            designationName: "Software developer 1",
-            description: "Handles software requirements"
-        },
-        {
-            id: 2,
-            designationName: "HR manager",
-            description: "HR head."
-        },
-        {
-            id: 3,
-            designationName: "Sales executive",
-            description: "Sales representative."
-        }
-    ])
+  const [designations, setDesignations] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [editDesignationId, setEditDesignationId] = useState(null);
+  const [editDepartmentId, setEditDepartmentId] = useState(null);
+  const [addDepartmentId, setAddDepartmentId] = useState(null);
+  const [refreshFlag, setRefreshFlag] = useState(false);
 
-    const [isAddModalVisible, setIsAddModalVisible] = useState(false);
-    const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-    const [searchKeyword, setSearchKeyword] = useState("");
-    const [editDesignationId, setEditDesignationId] = useState(null);
+  useEffect(() => {
+    getDesignations()
+      .then((res) => setDesignations(res.data))
+      .catch((err) => console.error("Error fetching designations:", err));
 
-    const matchedDesignations = searchKeyword == "" ? designations : designations.filter(d => d.designationName.toLowerCase().includes(searchKeyword.toLowerCase()));
+    getAllDepartments()
+      .then((res) => setDepartments(res.data))
+      .catch((err) => console.error("Error fetching departments:", err));
+  }, [refreshFlag]);
 
-    function handleAddClick(e) {
-        setIsAddModalVisible(true);
-    }
+  const matchedDesignations =
+    searchKeyword === ""
+      ? designations
+      : designations.filter((d) =>
+          d.name.toLowerCase().includes(searchKeyword.toLowerCase())
+        );
 
-    function handleDesignationAddition(e) {
-        e.preventDefault();
-        const temp = {
-            id: e.target.id.value,
-            designationName: e.target.designationName.value,
-            description: e.target.description.value,
-        }
-        setDesignations((d) => [...designations, temp]);
+  function handleAddClick() {
+    setIsAddModalVisible(true);
+  }
+
+  function handleDesignationAddition(e) {
+    e.preventDefault();
+    const newDesignation = {
+      name: e.target.name.value,
+      description: e.target.description.value,
+      departmentId: addDepartmentId,
+    };
+
+    createDesignation(newDesignation)
+      .then(() => {
+        setRefreshFlag(!refreshFlag);
         setIsAddModalVisible(false);
-    }
+        setAddDepartmentId(null);
+      })
+      .catch((err) => {
+        console.error("Error adding designation:", err);
+      });
+  }
 
-    function handleDesignationtEdit(e) {
-        e.preventDefault()
-        const temp = {
-            id: editDesignationId,
-            designationName: e.target.designationName.value,
-            description: e.target.description.value,
-        }
-        setDesignations(d => [...d.filter(des => des.id != temp.id), temp])
+  function handleDesignationEdit(e) {
+    e.preventDefault();
+    const updatedDesignation = {
+      name: e.target.name.value,
+      description: e.target.description.value,
+      departmentId: editDepartmentId,
+    };
+
+    updateDesignation(editDesignationId, updatedDesignation)
+      .then(() => {
+        setRefreshFlag(!refreshFlag);
+        setIsEditModalVisible(false);
         setEditDesignationId(null);
-        setIsEditModalVisible(false)
-    }
+        setEditDepartmentId(null);
+      })
+      .catch((err) => {
+        console.error("Error updating designation:", err);
+      });
+  }
 
-    function handleSearch(e) {
-        setSearchKeyword(e.target.value)
-    }
+  function handleSearch(e) {
+    setSearchKeyword(e.target.value);
+  }
 
-    function handleEditClick(e) {
-        setIsEditModalVisible(true)
-        setEditDesignationId(e.target.getAttribute("data-id"))
+  function handleEditClick(e) {
+    const id = e.target.getAttribute("data-id");
+    setEditDesignationId(id);
+    const designation = designations.find(
+      (d) => d.designationId.toString() === id.toString()
+    );
+    if (designation) {
+      setEditDepartmentId(designation.departmentId);
+      setIsEditModalVisible(true);
     }
+  }
 
-    function handleDelete(e) {
-        const desId = e.target.getAttribute("data-id");
-        setDesignations(d => d.filter(des => des.id != desId))
-    }
+  function handleDelete(e) {
+    const id = e.target.getAttribute("data-id");
+    deleteDesignation(id)
+      .then(() => {
+        setRefreshFlag(!refreshFlag);
+      })
+      .catch(() => {
+        alert(
+          "Cannot delete the designation because some users are still referencing it."
+        );
+      });
+  }
 
-    return (
-        <div className="flex flex-col items-stretch p-4">
-            <div className="flex flex-col items-stretch "><button type="button" style={{ backgroundColor: "#718769" }} className="text-white px-4 py-2 rounded" onClick={handleAddClick}>ADD NEW DESIGNATION</button></div>
-            <div>
-                {/* Modal for adding a designations */}
-                <Modal
-                    isOpen={isAddModalVisible}
-                    onClose={() => { setIsAddModalVisible(false) }}
-                    title="Add New Designation"
+  return (
+    <div className="flex flex-col items-stretch p-4">
+      <div className="mb-4">
+        <button
+          type="button"
+          style={{ backgroundColor: "#718769" }}
+          className="text-white px-4 py-2 rounded"
+          onClick={handleAddClick}
+        >
+          ADD NEW DESIGNATION
+        </button>
+      </div>
+
+      {/* Add Designation Modal */}
+      <Modal
+        isOpen={isAddModalVisible}
+        onClose={() => {
+          setIsAddModalVisible(false);
+          setAddDepartmentId(null);
+        }}
+        title="Add New Designation"
+      >
+        <form onSubmit={handleDesignationAddition} className="space-y-4">
+          <input
+            name="name"
+            placeholder="Designation name"
+            required
+            className="w-full border px-3 py-2 rounded"
+          />
+          <input
+            name="description"
+            placeholder="Description"
+            required
+            className="w-full border px-3 py-2 rounded"
+          />
+          <select
+            className="w-full border px-3 py-2 rounded"
+            onChange={(e) => setAddDepartmentId(e.target.value)}
+            defaultValue={"default"}
+            required
+          >
+            <option value="default" disabled>
+              Select Department
+            </option>
+            {departments.map((d) => (
+              <option key={d.departmentId} value={d.departmentId}>
+                {d.name}
+              </option>
+            ))}
+          </select>
+          <div className="text-right">
+            <button
+              type="submit"
+              className="text-white px-4 py-2 rounded"
+              style={{ backgroundColor: "#718769" }}
+            >
+              Save
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Edit Designation Modal */}
+      <Modal
+        isOpen={isEditModalVisible}
+        onClose={() => {
+          setIsEditModalVisible(false);
+          setEditDesignationId(null);
+          setEditDepartmentId(null);
+        }}
+        title="Edit Designation"
+      >
+        <form onSubmit={handleDesignationEdit} className="space-y-4">
+          <input
+            name="name"
+            required
+            className="w-full border px-3 py-2 rounded"
+            defaultValue={
+              editDesignationId == null
+                ? ""
+                : designations.find(
+                    (d) => d.designationId.toString() === editDesignationId.toString()
+                  )?.name || ""
+            }
+          />
+          <input
+            name="description"
+            required
+            className="w-full border px-3 py-2 rounded"
+            defaultValue={
+              editDesignationId == null
+                ? ""
+                : designations.find(
+                    (d) => d.designationId.toString() === editDesignationId.toString()
+                  )?.description || ""
+            }
+          />
+          <select
+            className="w-full border px-3 py-2 rounded"
+            onChange={(e) => setEditDepartmentId(e.target.value)}
+            value={editDepartmentId || "default"}
+            required
+          >
+            <option value="default" disabled>
+              Select Department
+            </option>
+            {departments.map((d) => (
+              <option key={d.departmentId} value={d.departmentId}>
+                {d.name}
+              </option>
+            ))}
+          </select>
+          <div className="text-right">
+            <button
+              type="submit"
+              className="text-white px-4 py-2 rounded"
+              style={{ backgroundColor: "#718769" }}
+            >
+              Save
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Search Box */}
+      <div className="flex flex-col my-4 relative">
+        <input
+          type="text"
+          placeholder="SEARCH DESIGNATION BY NAME"
+          className="border p-2 rounded text-center"
+          value={searchKeyword}
+          onChange={handleSearch}
+        />
+        <img
+          src="../assets/search.png"
+          className="w-6 h-6 absolute right-3 top-2"
+          alt="search icon"
+        />
+      </div>
+
+      {/* Designation Table */}
+      <table className="w-full border-collapse">
+        <thead>
+          <tr className="bg-gray-200">
+            <th className="border p-2">ID</th>
+            <th className="border p-2">Designation Name</th>
+            <th className="border p-2">Description</th>
+            <th className="border p-2">Department Name</th>
+            <th className="border p-2">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {matchedDesignations.map((d) => (
+            <tr key={d.designationId}>
+              <td className="border p-2">{d.designationId}</td>
+              <td className="border p-2">{d.name}</td>
+              <td className="border p-2">{d.description}</td>
+              <td className="border p-2">{d.departmentName}</td>
+              <td className="border p-2 text-center">
+                <button
+                  style={{ color: "#718769" }}
+                  className="mr-2 hover:underline"
+                  onClick={handleEditClick}
+                  data-id={d.designationId}
                 >
-                    <form onSubmit={handleDesignationAddition} className="space-y-4">
-                        <input
-                            name="id"
-                            placeholder="Id"
-                            required
-                            className="w-full border px-3 py-2 rounded"
-                        />
-                        <input
-                            name="designationName"
-                            placeholder="Designation name"
-                            required
-                            className="w-full border px-3 py-2 rounded"
-                        />
-                        <input
-                            name="description"
-                            placeholder="Description"
-                            required
-                            className="w-full border px-3 py-2 rounded"
-                        />
-                        <div className="text-right">
-                            <button
-                                type="submit"
-                                className="text-white px-4 py-2 rounded"
-                                style={{ backgroundColor: "#718769" }}
-                            >
-                                Save
-                            </button>
-                        </div>
-                    </form>
-                </Modal>
-            </div>
-
-            <div>
-                {/* Modal for editing designations */}
-                <Modal
-                    isOpen={isEditModalVisible}
-                    onClose={() => { setIsEditModalVisible(false) }}
-                    title="Edit Designation"
+                  Edit
+                </button>
+                <button
+                  className="text-red-600 hover:underline"
+                  onClick={handleDelete}
+                  data-id={d.designationId}
                 >
-                    <form onSubmit={handleDesignationtEdit} className="space-y-4">
-                        <input
-                            name="designationName"
-                            required
-                            className="w-full border px-3 py-2 rounded"
-                            defaultValue={editDesignationId == null ? "" : designations.find(d => d.id == editDesignationId).designationName}
-                        />
-                        <input
-                            name="description"
-                            required
-                            className="w-full border px-3 py-2 rounded"
-                            defaultValue={editDesignationId == null ? "" : designations.find(d => d.id == editDesignationId).description}
-                        />
-                        <div className="text-right">
-                            <button
-                                type="submit"
-                                className="text-white px-4 py-2 rounded"
-                                style={{ backgroundColor: "#718769" }}
-                            >
-                                Save
-                            </button>
-                        </div>
-                    </form>
-                </Modal>
-            </div>
-
-            <div className="flex flex-col my-4 relative">
-                <input type="text" placeholder="SEARCH DESIGNATION BY NAME" className="border p-2 rounded text-center" value={searchKeyword} onChange={handleSearch} />
-                <img src="../assets/search.png" className="w-6 h-6 absolute right-3 top-2" alt="" />
-            </div>
-            <div>
-                <table className="w-full border-collapse">
-                    <thead>
-                        <tr className="bg-gray-200">
-                            <th className="border p-2">ID</th>
-                            <th className="border p-2">Designation Name</th>
-                            <th className="border p-2">Description</th>
-                            <th className="border p-2">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {
-                            matchedDesignations.map((d) =>
-                                <tr key={d.id}>
-                                    <td className="border p-2">{d.id}</td>
-                                    <td className="border p-2">{d.designationName}</td>
-                                    <td className="border p-2">{d.description}</td>
-                                    <td className="border p-2 text-center">
-                                        <button
-                                            style={{ color: "#718769" }}
-                                            className="mr-2 hover:underline"
-                                            onClick={handleEditClick}
-                                            data-id={d.id}
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            className="text-red-600 hover:underline"
-                                            onClick={handleDelete}
-                                            data-id={d.id}
-                                        >
-                                            Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                            )
-                        }
-                    </tbody>
-                </table>
-            </div>
-
-        </div>
-    )
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }
