@@ -7,8 +7,7 @@ import {
 
 function Attendance() {
   const [data, setData] = useState([]);
-  const todayStr = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
-//   const [reload, setReload] = useState(false);
+  const todayStr = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD
 
   const loadData = () => {
     getAttendanceByUser()
@@ -22,7 +21,7 @@ function Attendance() {
 
   useEffect(() => {
     loadData();
-  }, [data]);
+  }, []);
 
   const handleCheckIn = () => {
     checkIn()
