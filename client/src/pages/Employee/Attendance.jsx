@@ -210,7 +210,9 @@ const AttendanceManagement = () => {
                         value={formData.checkOut}
                         onChange={handleInputChange}
                         className="border p-2 rounded w-full"
+                        disabled={!formData.checkIn}
                     />
+
                 </div>
 
                 <div className="md:col-span-3 text-right">
