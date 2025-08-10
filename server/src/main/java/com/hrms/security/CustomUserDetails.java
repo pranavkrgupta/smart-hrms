@@ -8,6 +8,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.hrms.entities.UserEntity;
+import com.hrms.entities.UserRole;
 
 public class CustomUserDetails implements UserDetails {
 
@@ -45,4 +46,8 @@ public class CustomUserDetails implements UserDetails {
 		return userId;
 	}
 
+	public UserRole getUserRole() {
+        return user.getUserRole();
+    }
+	
 }

@@ -40,14 +40,14 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http.csrf(csrf -> csrf.disable())
-				.authorizeHttpRequests(auth -> auth.requestMatchers("/auth/login").permitAll()
+				.authorizeHttpRequests(auth -> auth.requestMatchers("api/auth/login").permitAll()
 						.requestMatchers("/api/users/add").permitAll()
 						.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-						.requestMatchers("/admin/**").hasRole("ADMIN") // only ADMIN role access
-						.requestMatchers("/employee/**").hasRole("EMPLOYEE") // only EMPLOYEE role access
+						.requestMatchers("api/admin/**").hasRole("ADMIN") // only ADMIN role access
+						.requestMatchers("api/employee/**").hasAnyRole("EMPLOYEE","ADMIN") // only EMPLOYEE role access
 						.anyRequest().authenticated()) // All others need authentication
-				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless
-																												// session
+				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) 
+																											
 				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // JWT filter
 
 		return http.build();

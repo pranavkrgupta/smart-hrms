@@ -10,6 +10,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +22,7 @@ import com.hrms.security.CustomUserDetailsService;
 import com.hrms.security.JwtUtil;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
 
 	@Autowired
@@ -38,6 +39,7 @@ public class AuthController {
 
 	// Login endpoint
 	@PostMapping("/login")
+	@CrossOrigin(origins = "http://localhost:5173")
 	public ResponseEntity<?> login(@RequestBody AuthRequestDto authRequest) {
 		try {
 			authenticationManager.authenticate(
@@ -61,17 +63,17 @@ public class AuthController {
 		}
 	}
 	
-//	@GetMapping("/admin")
-//	@PreAuthorize("hasRole('ADMIN')")
-//	public ResponseEntity<?> helloAdmin(){
-//		return ResponseEntity.ok("Hello Admin");
-//	}
-//	
-//	@GetMapping("/employee")
-//	@PreAuthorize("hasRole('EMPLOYEE')")
-//	public ResponseEntity<?> helloEmployee(){
-//		return ResponseEntity.ok("Hello Employee");
-//	}
+	@GetMapping("/admin")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<?> helloAdmin(){
+		return ResponseEntity.ok("Hello Admin");
+	}
+	
+	@GetMapping("/employee")
+	@PreAuthorize("hasRole('EMPLOYEE')")
+	public ResponseEntity<?> helloEmployee(){
+		return ResponseEntity.ok("Hello Employee");
+	}
 
 }
 

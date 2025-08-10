@@ -3,12 +3,18 @@ package com.hrms.security;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
 
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
@@ -57,6 +63,15 @@ public class JwtUtil {
 	public String extractUsername(String token) {
 	    return extractAllClaims(token).getSubject();
 	}
+	
+	// =================== Extract UserId ===================
+	
+	public Long extractUserId(String token) {
+		Claims claims = extractAllClaims(token);
+		 String userIdStr = claims.get("userId", String.class);
+         Long userId = Long.parseLong(userIdStr);
+         return userId;
+	}
 
     // =================== Extract Expiration ===================
 
@@ -66,11 +81,30 @@ public class JwtUtil {
 	
     // =================== Validate Token ===================
 
-	public boolean validateToken(String token, CustomUserDetails userDetails) {
-	    final String username = extractUsername(token);
-	    final Date expiration = extractExpiration(token);
-	    return (username.equals(userDetails.getUsername()) && expiration.after(new Date()));
-	}
+	public Authentication validateToken(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            Date expiration = claims.getExpiration();
+            if (expiration.before(new Date())) {
+                return null; // token expired
+            }
 
+            String username = claims.getSubject();
+
+            @SuppressWarnings("unchecked")
+            List<String> rolesList = (List<String>) claims.get("roles");
+            String roles = String.join(",", rolesList);
+
+            List<GrantedAuthority> authorities = AuthorityUtils.commaSeparatedStringToAuthorityList(roles);
+
+            String userIdStr = claims.get("userId", String.class);
+            Long userId = Long.parseLong(userIdStr);
+
+            return new UsernamePasswordAuthenticationToken(userId, null, authorities);
+
+        } catch (Exception e) {
+        	throw new RuntimeException("Invalid or expired token", e);
+        }
+    }
 
 }
