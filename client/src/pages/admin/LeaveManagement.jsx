@@ -1,45 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { approveLeave, getAllLeaves, rejectLeave } from "../../services/leaveService";
 
 function LeaveManagement() {
-  // Sample Leave Data (this will be replace with api resp)
-  const [leaves, setLeaves] = useState([
-    {
-      id: 201,
-      name: "John Doe",
-      type: "Sick Leave",
-      from: "12-Apr-25",
-      to: "14-Apr-25",
-      status: "Pending",
-      comment: "",
-    },
-    {
-      id: 202,
-      name: "Jane Smith",
-      type: "Casual",
-      from: "18-Apr-25",
-      to: "18-Apr-25",
-      status: "Approved",
-      comment: "Enjoy your leave",
-    },
-    {
-      id: 203,
-      name: "Rahul Verma",
-      type: "Annual",
-      from: "1-May-25",
-      to: "5-May-25",
-      status: "Rejected",
-      comment: "Project delivery week",
-    },
-    {
-      id: 204,
-      name: "Neha Sharma",
-      type: "Casual",
-      from: "10-Apr-25",
-      to: "12-Apr-25",
-      status: "Pending",
-      comment: "",
-    },
-  ]);
+  const [leaves, setLeaves] = useState([]);
 
   // State for Search and filter
   const [searchTerm, setSearchTerm] = useState("");
@@ -53,13 +16,26 @@ function LeaveManagement() {
   // View modal state
   const [viewLeave, setViewLeave] = useState(null);
 
+  useEffect(() => {
+    getAllLeaves()
+      .then((res) => {
+        setLeaves(res.data);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }, [leaves]);
+
   // Filters the List based on Search input and dropdown value
   const filteredLeaves = leaves.filter((leave) => {
-    const matchesSearch = leave.name
+    const employeeName = leave.userName;
+    const matchesSearch = employeeName
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
+
     const matchesStatus =
       filterStatus === "All" || leave.status === filterStatus;
+
     return matchesSearch && matchesStatus;
   });
 
@@ -71,19 +47,31 @@ function LeaveManagement() {
 
   // Handles the confirmation of Approve/ Reject with comment
   const handleConfirmAction = () => {
-    const updatedLeaves = leaves.map((leave) =>
-      leave.id === selectedLeaveId
-        ? {
-            ...leave,
-            status: actionType === "approve" ? "Approved" : "Rejected",
-            comment: commentText,
-          }
-        : leave
-    );
-    setLeaves(updatedLeaves);
-    setSelectedLeaveId(null);
-    setActionType("");
-    setCommentText("");
+    if (!selectedLeaveId || !actionType) return;
+
+    const apiCall =
+      actionType === "approve"
+        ? approveLeave(selectedLeaveId, commentText)
+        : rejectLeave(selectedLeaveId, commentText);
+
+    apiCall
+      .then((res) => {
+        // Update leaves state to reflect the change
+        setLeaves((prevLeaves) =>
+          prevLeaves.map((leave) =>
+            leave.id === selectedLeaveId
+              ? { ...leave, status: actionType === "approve" ? "Approved" : "Rejected", adminComment: commentText }
+              : leave
+          )
+        );
+        setSelectedLeaveId(null);
+        setActionType("");
+        setCommentText("");
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("Failed to update leave status.");
+      });
   };
 
   // Cancels the comment box
@@ -146,10 +134,10 @@ function LeaveManagement() {
             filteredLeaves.map((leave) => (
               <tr key={leave.id}>
                 <td className="border p-2">{leave.id}</td>
-                <td className="border p-2">{leave.name}</td>
+                <td className="border p-2">{leave.userName}</td>
                 <td className="border p-2">{leave.type}</td>
-                <td className="border p-2">{leave.from}</td>
-                <td className="border p-2">{leave.to}</td>
+                <td className="border p-2">{leave.fromDate}</td>
+                <td className="border p-2">{leave.toDate}</td>
                 <td className="border p-2">{leave.status}</td>
                 <td className="border p-2 text-sm italic text-gray-600">
                   {leave.comment}
@@ -229,15 +217,33 @@ function LeaveManagement() {
         <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-40 flex items-center justify-center z-10">
           <div className="bg-white p-6 rounded shadow-md w-[400px]">
             <h2 className="text-xl font-semibold mb-4">Leave Details</h2>
-            <p><strong>ID:</strong> {viewLeave.id}</p>
-            <p><strong>Name:</strong> {viewLeave.name}</p>
-            <p><strong>Leave Type:</strong> {viewLeave.type}</p>
-            <p><strong>From:</strong> {viewLeave.from}</p>
-            <p><strong>To:</strong> {viewLeave.to}</p>
-            <p><strong>Status:</strong> {viewLeave.status}</p>
-            <p><strong>Comment:</strong> {viewLeave.comment}</p>
-            <button className="mt-4 bg-blue-600 text-white px-4 py-2 rounded"
-            onClick={()=> setViewLeave(null)}>CLose</button>
+            <p>
+              <strong>ID:</strong> {viewLeave.id}
+            </p>
+            <p>
+              <strong>Name:</strong> {viewLeave.userName}
+            </p>
+            <p>
+              <strong>Leave Type:</strong> {viewLeave.type}
+            </p>
+            <p>
+              <strong>From:</strong> {viewLeave.fromDate}
+            </p>
+            <p>
+              <strong>To:</strong> {viewLeave.toDate}
+            </p>
+            <p>
+              <strong>Status:</strong> {viewLeave.status}
+            </p>
+            <p>
+              <strong>Comment:</strong> {viewLeave.comment}
+            </p>
+            <button
+              className="mt-4 bg-blue-600 text-white px-4 py-2 rounded"
+              onClick={() => setViewLeave(null)}
+            >
+              CLose
+            </button>
           </div>
         </div>
       )}

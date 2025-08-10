@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -17,9 +18,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.hrms.dto.ChangePasswordDto;
 import com.hrms.security.CustomUserDetails;
 import com.hrms.security.CustomUserDetailsService;
 import com.hrms.security.JwtUtil;
+import com.hrms.service.UserService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -36,6 +41,9 @@ public class AuthController {
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+	
+	@Autowired
+	private UserService userService;
 
 	// Login endpoint
 	@PostMapping("/login")
@@ -63,17 +71,15 @@ public class AuthController {
 		}
 	}
 	
-	@GetMapping("/admin")
-	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<?> helloAdmin(){
-		return ResponseEntity.ok("Hello Admin");
-	}
-	
-	@GetMapping("/employee")
-	@PreAuthorize("hasRole('EMPLOYEE')")
-	public ResponseEntity<?> helloEmployee(){
-		return ResponseEntity.ok("Hello Employee");
-	}
+	@PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordDto changePasswordDto,Authentication auth) {
+
+        Long loggedInUserId = (Long) auth.getPrincipal();
+
+        userService.changePassword(loggedInUserId, changePasswordDto);
+
+        return ResponseEntity.ok("Password updated successfully");
+    }
 
 }
 

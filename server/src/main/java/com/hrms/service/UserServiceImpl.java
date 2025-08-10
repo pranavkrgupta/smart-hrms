@@ -13,6 +13,7 @@ import com.hrms.custom_exceptions.ResourceNotFoundException;
 import com.hrms.dao.DesignationDao;
 import com.hrms.dao.UserDao;
 import com.hrms.dto.ApiResponse;
+import com.hrms.dto.ChangePasswordDto;
 import com.hrms.dto.UserReqDto;
 import com.hrms.dto.UserRespDto;
 import com.hrms.entities.Designation;
@@ -26,7 +27,7 @@ import jakarta.validation.Valid;
 @Transactional
 public class UserServiceImpl implements UserService {
 
-    private final PasswordEncoder passwordEncoder;
+	private final PasswordEncoder passwordEncoder;
 
 	@Autowired
 	private final ModelMapper modelMapper;
@@ -72,7 +73,8 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserRespDto getUserById(Long user_id) {
-		UserEntity UserEntity = userDao.findById(user_id).orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
+		UserEntity UserEntity = userDao.findById(user_id)
+				.orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
 		UserRespDto dto = modelMapper.map(UserEntity, UserRespDto.class);
 		dto.setDepartmentName(UserEntity.getDesignation().getDepartment().getName());
 		return dto;
@@ -80,33 +82,33 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public ApiResponse updateUser(Long user_id, @Valid UserReqDto userReqDto) {
-	    UserEntity userEntity = userDao.findById(user_id)
-	        .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
+		UserEntity userEntity = userDao.findById(user_id)
+				.orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
 
-	    // Get designation proxy
-	    Designation designation = designationDao.getReferenceById(userReqDto.getDesignationId());
+		// Get designation proxy
+		Designation designation = designationDao.getReferenceById(userReqDto.getDesignationId());
 
-	    // Map userReqDto into a temporary User object
-	    UserEntity tempUser = modelMapper.map(userReqDto, UserEntity.class);
+		// Map userReqDto into a temporary User object
+		UserEntity tempUser = modelMapper.map(userReqDto, UserEntity.class);
 
-	    // Copy fields individually to existing userEntity, but skip userId and designation
-	    userEntity.setName(tempUser.getName());
-	    userEntity.setEmail(tempUser.getEmail());
-	    userEntity.setDob(tempUser.getDob());
-	    userEntity.setGender(tempUser.getGender());
-	    userEntity.setAddress(tempUser.getAddress());
-	    userEntity.setPhone(tempUser.getPhone());
-	    // Don't change password or userRole here if not part of DTO
+		// Copy fields individually to existing userEntity, but skip userId and
+		// designation
+		userEntity.setName(tempUser.getName());
+		userEntity.setEmail(tempUser.getEmail());
+		userEntity.setDob(tempUser.getDob());
+		userEntity.setGender(tempUser.getGender());
+		userEntity.setAddress(tempUser.getAddress());
+		userEntity.setPhone(tempUser.getPhone());
+		// Don't change password or userRole here if not part of DTO
 
-	    // Now set the designation explicitly
-	    userEntity.setDesignation(designation);
+		// Now set the designation explicitly
+		userEntity.setDesignation(designation);
 
-	    // Save updated user
-	    userDao.save(userEntity);
+		// Save updated user
+		userDao.save(userEntity);
 
-	    return new ApiResponse("User with id - " + user_id + " updated");
+		return new ApiResponse("User with id - " + user_id + " updated");
 	}
-
 
 	@Override
 	public ApiResponse deleteUser(Long user_id) {
@@ -115,5 +117,24 @@ public class UserServiceImpl implements UserService {
 		return new ApiResponse("User Deleted Succesfully");
 	}
 
+	@Override
+	public void changePassword(Long loggedInUserId, @Valid ChangePasswordDto changePasswordDto) {
+		UserEntity user = userDao.findById(loggedInUserId)
+				.orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + loggedInUserId));
+
+		// Verify current password
+		if (!passwordEncoder.matches(changePasswordDto.getCurrentPassword(), user.getPassword())) {
+			throw new ResourceNotFoundException("Current password is incorrect");
+		}
+
+		// Check new password and confirm password match
+		if (!changePasswordDto.getNewPassword().equals(changePasswordDto.getConfirmPassword())) {
+			throw new ResourceNotFoundException("New password and confirm password do not match");
+		}
+		
+		 // Update password
+        user.setPassword(passwordEncoder.encode(changePasswordDto.getNewPassword()));
+        userDao.save(user);
+	}
 
 }

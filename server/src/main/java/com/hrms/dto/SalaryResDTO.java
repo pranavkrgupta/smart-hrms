@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,12 +14,12 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SalaryRespDTO {
-	
+@Builder
+public class SalaryResDTO {
 	private Long id;
-    private BigDecimal amount;   
-    private BigDecimal pfDeduction = BigDecimal.ZERO;
+    private Long userId;
+    private String userName;
+    private BigDecimal amount;
     private LocalDate applicableFrom;
-    private String UserName;
-
+    private BigDecimal pfDeduction;
 }

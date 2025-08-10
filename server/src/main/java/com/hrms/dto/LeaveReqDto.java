@@ -4,11 +4,15 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 import java.time.LocalDate;
 
+import com.hrms.entities.LeaveType;
+import com.hrms.entities.UserEntity;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class LeaveDto {
+@Builder
+public class LeaveReqDto {
 
     @NotNull(message = "From date is mandatory")
     private LocalDate fromDate;
@@ -19,14 +23,9 @@ public class LeaveDto {
     @NotBlank(message = "Reason cannot be blank")
     private String reason;
 
-    @NotNull(message = "Status is mandatory")
-    private String status;  // Use string for enum value e.g. "Pending"
-
-    @NotNull(message = "Type is mandatory")
-    private String type;    // Use string for enum value e.g. "Sick"
-
-    private String comment;
-
+    @NotNull(message = "Leave type is mandatory")
+    private LeaveType type;
+    
     // Custom validation to ensure fromDate <= toDate
     @AssertTrue(message = "From date must be before or equal to To date")
     public boolean isFromDateBeforeOrEqualToToDate() {
