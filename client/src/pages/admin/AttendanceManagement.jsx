@@ -1,247 +1,31 @@
-import React, { useState } from "react";
-const attendanceData = [
-  {
-    id: 1,
-    employee_id: 101,
-    name: "Alice",
-    date: "2025-07-19",
-    check_in: "09:05",
-    check_out: "17:30",
-    status: "present",
-  },
-  {
-    id: 2,
-    employee_id: 102,
-    name: "Bob",
-    date: "2025-07-19",
-    check_in: "",
-    check_out: "",
-    status: "absent",
-  },
-  {
-    id: 3,
-    employee_id: 103,
-    name: "Charlie",
-    date: "2025-07-19",
-    check_in: "09:20",
-    check_out: "17:10",
-    status: "present",
-  },
-  {
-    id: 4,
-    employee_id: 104,
-    name: "David",
-    date: "2025-07-19",
-    check_in: "",
-    check_out: "",
-    status: "on leave",
-  },
-  {
-    id: 5,
-    employee_id: 105,
-    name: "Eve",
-    date: "2025-07-19",
-    check_in: "09:10",
-    check_out: "17:45",
-    status: "present",
-  },
-  {
-    id: 6,
-    employee_id: 101,
-    name: "Alice",
-    date: "2025-07-20",
-    check_in: "09:00",
-    check_out: "17:25",
-    status: "present",
-  },
-  {
-    id: 7,
-    employee_id: 102,
-    name: "Bob",
-    date: "2025-07-20",
-    check_in: "09:15",
-    check_out: "17:20",
-    status: "present",
-  },
-  {
-    id: 8,
-    employee_id: 103,
-    name: "Charlie",
-    date: "2025-07-20",
-    check_in: "09:18",
-    check_out: "17:30",
-    status: "present",
-  },
-  {
-    id: 9,
-    employee_id: 104,
-    name: "David",
-    date: "2025-07-20",
-    check_in: "",
-    check_out: "",
-    status: "absent",
-  },
-  {
-    id: 10,
-    employee_id: 105,
-    name: "Eve",
-    date: "2025-07-20",
-    check_in: "09:05",
-    check_out: "17:40",
-    status: "present",
-  },
-  {
-    id: 11,
-    employee_id: 101,
-    name: "Alice",
-    date: "2025-07-21",
-    check_in: "",
-    check_out: "",
-    status: "on leave",
-  },
-  {
-    id: 12,
-    employee_id: 102,
-    name: "Bob",
-    date: "2025-07-21",
-    check_in: "09:10",
-    check_out: "17:15",
-    status: "present",
-  },
-  {
-    id: 13,
-    employee_id: 103,
-    name: "Charlie",
-    date: "2025-07-21",
-    check_in: "",
-    check_out: "",
-    status: "absent",
-  },
-  {
-    id: 14,
-    employee_id: 104,
-    name: "David",
-    date: "2025-07-21",
-    check_in: "09:12",
-    check_out: "17:25",
-    status: "present",
-  },
-  {
-    id: 15,
-    employee_id: 105,
-    name: "Eve",
-    date: "2025-07-21",
-    check_in: "09:08",
-    check_out: "17:35",
-    status: "present",
-  },
-  {
-    id: 16,
-    employee_id: 101,
-    name: "Alice",
-    date: "2025-07-22",
-    check_in: "09:04",
-    check_out: "17:32",
-    status: "present",
-  },
-  {
-    id: 17,
-    employee_id: 102,
-    name: "Bob",
-    date: "2025-07-22",
-    check_in: "09:00",
-    check_out: "17:10",
-    status: "present",
-  },
-  {
-    id: 18,
-    employee_id: 103,
-    name: "Charlie",
-    date: "2025-07-22",
-    check_in: "09:09",
-    check_out: "17:18",
-    status: "present",
-  },
-  {
-    id: 19,
-    employee_id: 104,
-    name: "David",
-    date: "2025-07-22",
-    check_in: "09:17",
-    check_out: "17:00",
-    status: "present",
-  },
-  {
-    id: 20,
-    employee_id: 105,
-    name: "Eve",
-    date: "2025-07-22",
-    check_in: "",
-    check_out: "",
-    status: "absent",
-  },
-  {
-    id: 21,
-    employee_id: 101,
-    name: "Alice",
-    date: "2025-07-23",
-    check_in: "09:03",
-    check_out: "17:28",
-    status: "present",
-  },
-  {
-    id: 22,
-    employee_id: 102,
-    name: "Bob",
-    date: "2025-07-23",
-    check_in: "",
-    check_out: "",
-    status: "on leave",
-  },
-  {
-    id: 23,
-    employee_id: 103,
-    name: "Charlie",
-    date: "2025-07-23",
-    check_in: "09:10",
-    check_out: "17:22",
-    status: "present",
-  },
-  {
-    id: 24,
-    employee_id: 104,
-    name: "David",
-    date: "2025-07-23",
-    check_in: "09:08",
-    check_out: "17:30",
-    status: "present",
-  },
-  {
-    id: 25,
-    employee_id: 105,
-    name: "Eve",
-    date: "2025-07-23",
-    check_in: "09:11",
-    check_out: "17:27",
-    status: "present",
-  },
-];
+import React, { useEffect, useState } from "react";
+import { getAllAttendance } from "../../services/attendanceService";
 
 function AttendanceManagement() {
-  const [data, setData] = useState(attendanceData);
+  const [data, setData] = useState([]);
   const today = new Date().toISOString().split("T")[0];
   const [viewMode, setViewMode] = useState("date");
   const [selectedDate, setSelectedDate] = useState(today);
   const [selectedEmployee, setSelectedEmployee] = useState("");
 
-  const uniqueEmployees = [...new Set(attendanceData.map((item) => item.name))];
+  const uniqueEmployees = [...new Set(data.map((item) => item.userName))];
 
-  const dateWiseData = attendanceData.filter(
+  const dateWiseData = data.filter(
     (item) => item.date === selectedDate
   );
-  const employeeWiseData = attendanceData.filter(
-    (item) => item.name === selectedEmployee
+  const employeeWiseData = data.filter(
+    (item) => item.userName === selectedEmployee
   );
+
+  useEffect(() => {
+    getAllAttendance()
+      .then((response) => {
+        setData(response.data);
+      })
+      .catch((err) => {
+        setError(err.message || "Error fetching attendance data");
+      });
+  }, []);
 
   return (
     <div>
@@ -300,16 +84,18 @@ function AttendanceManagement() {
                   <th className="border px-4 py-2">Employee</th>
                   <th className="border px-4 py-2">Check-in</th>
                   <th className="border px-4 py-2">Check-out</th>
+                  <th className="border px-4 py-2">Duration (Minutes)</th>
                   <th className="border px-4 py-2">Status</th>
-                  <th className="border px-4 py-2">Actions</th>
+                  {/* <th className="border px-4 py-2">Actions</th> */}
                 </>
               ) : (
                 <>
                   <th className="border px-4 py-2">Date</th>
                   <th className="border px-4 py-2">Check-in</th>
                   <th className="border px-4 py-2">Check-out</th>
+                  <th className="border px-4 py-2">Duration (Minutes)</th>
                   <th className="border px-4 py-2">Status</th>
-                  <th className="border px-4 py-2">Actions</th>
+                  {/* <th className="border px-4 py-2">Actions</th> */}
                 </>
               )}
             </tr>
@@ -320,54 +106,62 @@ function AttendanceManagement() {
                 <tr key={item.id}>
                   {viewMode === "date" ? (
                     <>
-                      <td className="border px-4 py-2">{item.employee_id}</td>
-                      <td className="border px-4 py-2">{item.name}</td>
+                      <td className="border px-4 py-2">{item.id}</td>
+                      <td className="border px-4 py-2">{item.userName}</td>
                       <td className="border px-4 py-2">
-                        {item.check_in || "-"}
+                        {item.checkIn || "-"}
                       </td>
                       <td className="border px-4 py-2">
-                        {item.check_out || "-"}
+                        {item.checkOut || "-"}
+                      </td>
+                      <td className="border px-4 py-2">
+                        {item.durationInMinutes || "-"}
                       </td>
                       <td
-                        className={`border px-4 py-2 capitalize ${item.status === "present"
+                        className={`border px-4 py-2 capitalize ${
+                          item.status === "ACCEPTED"
                             ? "text-green-600"
-                            : item.status === "absent"
-                              ? "text-red-600"
-                              : "text-yellow-600"
-                          }`}
+                            : item.status === "REJECTED"
+                            ? "text-red-600"
+                            : "text-yellow-600"
+                        }`}
                       >
                         {item.status}
                       </td>
-                      <td className="border px-4 py-2">
+                      {/* <td className="border px-4 py-2">
                         <button className="text-blue-600 underline hover:font-semibold">
                           Edit
                         </button>
-                      </td>
+                      </td> */}
                     </>
                   ) : (
                     <>
                       <td className="border px-4 py-2">{item.date}</td>
                       <td className="border px-4 py-2">
-                        {item.check_in || "-"}
+                        {item.checkIn || "-"}
                       </td>
                       <td className="border px-4 py-2">
-                        {item.check_out || "-"}
+                        {item.checkOut || "-"}
+                      </td>
+                      <td className="border px-4 py-2">
+                        {item.durationInMinutes || "-"}
                       </td>
                       <td
-                        className={`border px-4 py-2 capitalize ${item.status === "present"
+                        className={`border px-4 py-2 capitalize ${
+                          item.status === "ACCEPTED"
                             ? "text-green-600"
-                            : item.status === "absent"
-                              ? "text-red-600"
-                              : "text-yellow-600"
-                          }`}
+                            : item.status === "REJECTED"
+                            ? "text-red-600"
+                            : "text-yellow-600"
+                        }`}
                       >
                         {item.status}
                       </td>
-                      <td className="border px-4 py-2">
+                      {/* <td className="border px-4 py-2">
                         <button className="text-blue-600 underline hover:font-semibold">
                           Edit
                         </button>
-                      </td>
+                      </td> */}
                     </>
                   )}
                 </tr>

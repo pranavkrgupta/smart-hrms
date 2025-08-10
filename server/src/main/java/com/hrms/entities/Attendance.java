@@ -12,6 +12,7 @@ import java.time.*;
 @Entity
 @Table(name = "Attendance", uniqueConstraints = { @UniqueConstraint(columnNames = { "user_id", "date" }) })
 @ToString
+@Builder
 public class Attendance extends BaseEntity {
 
 	@Id
@@ -38,7 +39,7 @@ public class Attendance extends BaseEntity {
 	private Integer durationInMinutes;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "status", columnDefinition = "ENUM('Pending', 'Accepted', 'Rejected')")
+	@Column(name = "status", columnDefinition = "ENUM('PENDING', 'ACCEPTED', 'HALF_DAY', 'REJECTED')")
 	private AttendanceStatus status;
 
 	private static final int FULL_DAY_DURATION = 480; // 8 hours

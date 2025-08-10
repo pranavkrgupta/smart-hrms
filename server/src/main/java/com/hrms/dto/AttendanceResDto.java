@@ -12,6 +12,7 @@ public class AttendanceResDto {
     
     private Long id;
     private Long userId;       // user id for reference if needed
+    private String UserName;
     private LocalDate date;
     private String checkIn;
     private String checkOut;

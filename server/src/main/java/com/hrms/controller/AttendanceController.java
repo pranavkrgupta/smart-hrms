@@ -1,70 +1,64 @@
 package com.hrms.controller;
 
-import com.hrms.dto.AttendanceDto;
-import com.hrms.dto.AttendanceResDto;
 import com.hrms.service.AttendanceService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-import java.util.List;
-
 @RestController
-@RequestMapping("/api/attendance")
-@CrossOrigin(origins = "http://localhost:5173") // or your frontend origin
+@CrossOrigin(origins = "http://localhost:5173/")
+@RequestMapping("/api")
 @AllArgsConstructor
 @Validated
 public class AttendanceController {
 
-    private final AttendanceService attendanceService;
+	private final AttendanceService attendanceService;
+	
+	@CrossOrigin(origins = "http://localhost:5173")
+	@GetMapping("/admin/attendance")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
+	@Operation(description = "Get all employee attendance records")
+	public ResponseEntity<?> getAllAttendance(Authentication auth) {
+		System.out.println("Authorities in auth: " + auth.getAuthorities());
+		return ResponseEntity.ok(attendanceService.getAllAttendance());
+	}
 
-    @Operation(
-        summary = "Get attendance records by user ID",
-        description = "Fetches all attendance records associated with the given user ID. Returns HTTP 204 if no records found."
-    )
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<AttendanceResDto>> getAttendanceByUser(@PathVariable Long userId) {
-        List<AttendanceResDto> attendanceList = attendanceService.getAttendanceByUser(userId);
-        if (attendanceList.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(attendanceList);
+	@GetMapping("/employee/attendance/{userId}")
+	@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
+	@Operation(description = "Get attendance records (Employee can only see own records)")
+	public ResponseEntity<?> getAttendanceByUser(@PathVariable Long userId, Authentication auth) {
+		Long loggedInUserId = (Long) auth.getPrincipal();
+
+		boolean isEmployee = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_EMPLOYEE"));
+
+		if (isEmployee && !loggedInUserId.equals(userId)) {
+			throw new AccessDeniedException("Employees can only view their own attendance");
+		}
+		return ResponseEntity.ok(attendanceService.getAttendanceByUser(userId));
+	}
+
+	// Employee CheckIn
+	@PostMapping("/employee/attendance/checkin")
+	@PreAuthorize("hasRole('EMPLOYEE')")
+	public ResponseEntity<?> checkin(Authentication auth) {
+		Long loggedInUserId = (Long) auth.getPrincipal();
+		
+		return ResponseEntity.ok(attendanceService.checkIn(loggedInUserId));
+	}
+	
+	// Employee Check-Out
+    @PutMapping("/employee/attendance/checkout")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<?> checkOut(Authentication auth) {
+    	Long loggedInUserId = (Long) auth.getPrincipal();
+
+        return ResponseEntity.ok(attendanceService.checkOut(loggedInUserId));
     }
 
-    @Operation(
-        summary = "Create a new attendance record for a user",
-        description = "Creates a new attendance record for the specified user ID. The request body must contain attendance details."
-    )
-    @PostMapping("/{userId}")
-    public ResponseEntity<?> createAttendance(@PathVariable Long userId,
-                                              @Valid @RequestBody AttendanceDto attendanceDto) {
-        attendanceService.createAttendance(userId, attendanceDto);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
 
-  
-    @PutMapping("/{attendanceId}")
-    @Operation(summary = "Update an attendance record",
-               description = "Updates an existing attendance record identified by attendanceId.")
-    public ResponseEntity<?> updateAttendance(
-            @PathVariable Long attendanceId,
-            @Valid @RequestBody AttendanceDto attendanceDto) {
-        attendanceService.updateAttendance(attendanceId, attendanceDto);
-        return ResponseEntity.ok().build();
-    }
-
-
-    @Operation(
-        summary = "Delete an attendance record",
-        description = "Deletes the attendance record identified by attendanceId."
-    )
-    @DeleteMapping("/{attendanceId}")
-    public ResponseEntity<?> deleteAttendance(@PathVariable Long attendanceId) {
-        attendanceService.deleteAttendance(attendanceId);
-        return ResponseEntity.ok().build();
-    }
 }
