@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = "http://localhost:8080/api/auth";
+const BASE_URL = "http://myhrms.duckdns.org:8080/api/auth";
 
 export const loginService = (email, password) => axios.post(`${BASE_URL}/login`, { email, password });
 
