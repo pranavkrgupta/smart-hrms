@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
-const BASE_URL = "http://myhrms.duckdns.org:8080/api/leaves";
+const BASE_URL = "https://myhrms.duckdns.org:8080/api/leaves";
 
 // Employee APIs
 export const addLeave = (leaveData) => {
