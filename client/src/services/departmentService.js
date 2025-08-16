@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "https://myhrms.duckdns.org/api/departments";
+const BASE_URL = "http://hrms-server:8080/api/departments";
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
