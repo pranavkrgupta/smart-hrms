@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
-const BASE_URL = "https://myhrms.duckdns.org:8080/api";
+const BASE_URL = "https://myhrms.duckdns.org/api";
 
 export const getAllAttendance = () => {
   const token = localStorage.getItem("token");
