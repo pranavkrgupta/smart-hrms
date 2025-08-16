@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://hrms-server:8080/api/salaries";
+const BASE_URL = "http://myhrms.duckdns.org:8080/api/salaries";
 
 export const getAllSalaries = () => {
   const token = localStorage.getItem("token");
