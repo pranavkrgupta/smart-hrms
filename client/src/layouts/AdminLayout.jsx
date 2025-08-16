@@ -3,7 +3,7 @@ import Sidebar from "../components/Sidebar";
 import { Outlet } from "react-router-dom";
 
 const adminLinks = [
-  { label: "Dashboard", path: "/admin/dashboard" },
+  // { label: "Dashboard", path: "/admin/dashboard" },
   { label: "Manage Employees", path: "/admin/manage-employees" },
   { label: "Manage Departments", path: "/admin/manage-departments" },
   { label: "Manage Designations", path: "/admin/manage-designations" },

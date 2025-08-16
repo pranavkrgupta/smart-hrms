@@ -21,7 +21,7 @@ function Attendance() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [data]);
 
   const handleCheckIn = () => {
     checkIn()

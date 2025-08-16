@@ -3,6 +3,7 @@ package com.hrms.config;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,58 +24,65 @@ import com.hrms.security.JwtAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // enables annotations like @PreAuthorize on methods
+@EnableMethodSecurity
 public class SecurityConfig {
 
-	@Autowired
-	private CustomUserDetailsService userDetailsService;
+    @Autowired
+    private CustomUserDetailsService userDetailsService;
 
-	@Autowired
-	private PasswordEncoder passwordEncoder;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-	@Autowired
-	private JwtAuthenticationFilter jwtAuthenticationFilter;
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
-	// AuthenticationManager bean to be used for authentication (login)
-	@Bean
-	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-		return config.getAuthenticationManager();
-	}
+    // Read allowed frontend URL from environment variable or application.properties
+    @Value("${frontend.url:*}")
+    private String frontendUrl;
 
-	// Main security filter chain configuration
-	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http.cors() // enable CORS with the bean defined below
-				.and().csrf(csrf -> csrf.disable())
-				.authorizeHttpRequests(
-						auth -> auth.requestMatchers("/api/auth/login").permitAll().requestMatchers("/api/users/add")
-								.permitAll().requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-								.requestMatchers("/api/admin/**").hasRole("ADMIN") // only ADMIN role access
-								.requestMatchers("/api/employee/**").hasAnyRole("EMPLOYEE", "ADMIN") // EMPLOYEE or
-																										// ADMIN role
-																										// access
-								.requestMatchers("/api/leaves/admin/**").hasRole("ADMIN")
-								.requestMatchers("/api/leaves/employee/**").hasAnyRole("EMPLOYEE", "ADMIN").anyRequest()
-								.authenticated())
-				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
 
-		return http.build();
-	}
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.cors() // enable CORS with the bean defined below
+            .and().csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/login").permitAll()
+                .requestMatchers("/api/users/add").permitAll()
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/employee/**").hasAnyRole("EMPLOYEE", "ADMIN")
+                .requestMatchers("/api/leaves/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/leaves/employee/**").hasAnyRole("EMPLOYEE", "ADMIN")
+                .anyRequest().authenticated()
+            )
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-	// CORS configuration bean
-	@Bean
-	public CorsConfigurationSource corsConfigurationSource() {
-		CorsConfiguration configuration = new CorsConfiguration();
+        return http.build();
+    }
 
-		configuration.setAllowedOrigins(List.of("http://localhost:5173")); // frontend URL
-		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-		configuration.setAllowedHeaders(List.of("*"));
-		configuration.setAllowCredentials(true); // if you need cookies or auth headers
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
 
-		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", configuration);
+        // Allow frontend from environment variable or all (*) for dev
+        if (frontendUrl.equals("*")) {
+            configuration.setAllowedOrigins(List.of("*"));
+        } else {
+            configuration.setAllowedOrigins(List.of(frontendUrl));
+        }
 
-		return source;
-	}
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
+    }
 }

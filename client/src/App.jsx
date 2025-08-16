@@ -27,7 +27,7 @@ function App() {
       {/* Protected Admin Route */}
       <Route element={<PrivateRoute allowedRoles={["ROLE_ADMIN"]} />}>
         <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
+          <Route index element={<ManageEmployees />} />
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="profile" element={<AdminProfile />} />
           <Route path="settings" element={<AdminSettings />} />
@@ -42,7 +42,7 @@ function App() {
       {/* Protected Employee Route */}
       <Route element={<PrivateRoute allowedRoles={["ROLE_EMPLOYEE"]} />}>
         <Route path="/employee" element={<EmployeeLayout />}>
-          <Route index element={<Dashboard />} />
+          <Route index element={<Attendance />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="leave" element={<Leave />} />
           <Route path="settings" element={<Settings />} />
