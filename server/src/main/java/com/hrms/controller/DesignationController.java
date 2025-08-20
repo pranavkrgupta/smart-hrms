@@ -20,7 +20,6 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173")
 @PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/api/designations")
 @AllArgsConstructor

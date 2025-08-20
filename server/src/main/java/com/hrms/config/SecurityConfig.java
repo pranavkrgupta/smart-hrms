@@ -1,5 +1,6 @@
 package com.hrms.config;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,20 +70,17 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Allow frontend from environment variable or all (*) for dev
-        if (frontendUrl.equals("*")) {
-            configuration.setAllowedOrigins(List.of("*"));
-        } else {
-            configuration.setAllowedOrigins(List.of(frontendUrl));
-        }
+        // Use allowedOrigins from application.properties
+        configuration.setAllowedOrigins(List.of(frontendUrl));
 
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
+        configuration.setAllowCredentials(true); // needed for JWT/auth headers
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
 
         return source;
     }
+
 }

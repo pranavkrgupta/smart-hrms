@@ -16,7 +16,6 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/leaves")
-@CrossOrigin(origins = "http://localhost:5173")
 @AllArgsConstructor
 @Validated
 public class LeaveController {

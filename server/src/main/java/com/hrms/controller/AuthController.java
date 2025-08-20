@@ -47,7 +47,6 @@ public class AuthController {
 
 	// Login endpoint
 	@PostMapping("/login")
-	@CrossOrigin(origins = "http://localhost:5173")
 	public ResponseEntity<?> login(@RequestBody AuthRequestDto authRequest) {
 		try {
 			authenticationManager.authenticate(

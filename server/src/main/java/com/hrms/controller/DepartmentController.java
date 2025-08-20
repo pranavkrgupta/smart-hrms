@@ -23,7 +23,6 @@ import lombok.AllArgsConstructor;
 @PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/api/departments")
 @AllArgsConstructor
-@CrossOrigin(origins="http://localhost:5173")
 public class DepartmentController {
 
 	private DepartmentService service;

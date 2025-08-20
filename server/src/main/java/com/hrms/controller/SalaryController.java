@@ -28,7 +28,6 @@ import lombok.AllArgsConstructor;
 @RestController
 @RequestMapping("/api/salaries")
 @AllArgsConstructor
-@CrossOrigin(origins="http://localhost:5173")
 public class SalaryController {
 	
 	private SalaryService salaryService;
